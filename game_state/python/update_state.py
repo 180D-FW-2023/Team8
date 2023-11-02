@@ -10,7 +10,7 @@ class GameState:
         self.v_mag = 50
         
         self.fig, self.ax = plt.subplots()
-        self.ln, = self.ax.plot([], [], 'ro')
+        self.display, = self.ax.plot([], [], 'ro')
         self.ax.set_xlim(0,self.x_max)
         self.ax.set_ylim(0,self.y_max)
         
@@ -26,8 +26,8 @@ class GameState:
         self.game_board[self.ball.ball_position[0]][self.ball.ball_position[1]] = 1
     
     def refresh_display(self):
-        self.ln.set_data(self.ball.ball_position_history)
-        self.ln.set_color(np.array([1, .5, .25, .125, .0625]))
+        self.display.set_data(self.ball.ball_position_history)
+        self.display.set_color(np.array([1, .5, .25, .125, .0625]))
 
 class Actor:
     def __init__(self, x_max, y_max):
@@ -72,7 +72,7 @@ def update(frame):
 
     #time.sleep(1)
     #print(game_board)
-    return game_state.ln
+    return game_state.display
 
 ani = anim.FuncAnimation(game_state.fig, update, frames=np.linspace(0, 2*np.pi, 128), blit=False, interval = 1)
 plt.show()
