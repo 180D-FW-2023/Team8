@@ -5,74 +5,184 @@ import time
 
 class GameState:
     def __init__(self):
-        self.x_max = 5000
-        self.y_max = 4000
-        self.v_mag = 50
+        # Set constants
+        self.x_max = 50000
+        self.y_max = 40000
+        self.v_mag = 500
         
+        # Setup figure and axes
         self.fig, self.ax = plt.subplots()
-        self.display, = self.ax.plot([], [], 'ro')
         self.ax.set_xlim(0,self.x_max)
         self.ax.set_ylim(0,self.y_max)
+        self.ax.get_xaxis().set_ticks([])
+        self.ax.get_yaxis().set_ticks([])
+        self.ax.get_xaxis().set_visible(False)
+        self.ax.get_yaxis().set_visible(False)
+
+        # Draw Scene
+        center_line = np.array([[self.x_max/2, self.x_max/2], [0, self.y_max]])
+        self.ax.plot(center_line[0, :], center_line[1, :], color = 'gray')
         
-        self.ball = Ball(self.x_max, self.y_max, self.v_mag)
-        self.game_board = np.zeros((self.x_max, self.y_max))
+        # Create actors
+        self.ball = Ball(self)
+        self.left_striker = Striker(self, is_left_striker=True, inertia = 0)
+        self.right_striker = StrikerCPU(self, is_left_striker=False, inertia = 0.8)
+        self.score = [0,0]
         return
 
-    def update_state(self):
+    def update_state(self, left_striker_loc, right_striker_loc):
+        # Move actors
         self.ball.bounce_ball()
-        self.ball.move_ball()
+        self.ball.move()
+        self.left_striker.move(left_striker_loc)
+        self.right_striker.move(right_striker_loc)
 
-        self.game_board = np.zeros((self.x_max, self.y_max))
-        self.game_board[self.ball.ball_position[0]][self.ball.ball_position[1]] = 1
+        # Update text
+        self.ax.set_title('SCORE\n' + str(self.score[0]) + ' : ' + str(self.score[1]))
+    
+    def score_point(self, is_left_point):
+        self.score[is_left_point] += 1
+        self.ball.position = np.array([self.x_max/2, self.y_max/2])
+        return
+        if is_left_point:
+            self.ball.position = self.left_striker.position
+        else:
+            self.ball.position = self.right_striker.position
     
     def refresh_display(self):
-        self.display.set_data(self.ball.ball_position_history)
-        self.display.set_color(np.array([1, .5, .25, .125, .0625]))
+        # Draw actor plots
+        self.ball.draw()
+        self.left_striker.draw()
+        self.right_striker.draw()
 
+# Base class for actors
 class Actor:
-    def __init__(self, x_max, y_max):
-        self.x_max = x_max
-        self.y_max = y_max
+    def __init__(self, game_state):
+        self.game_state = game_state
+        self.x_max = game_state.x_max
+        self.y_max = game_state.y_max
+        self.position = np.array([0, 0])
+    
+    def move(self):
+        pass
 
 class Striker(Actor):
-    def __init__(self, x_max, y_max):
-        Actor.__init__(self, x_max, y_max)        
- 
+    def __init__(self, game_state, is_left_striker, inertia):
+        Actor.__init__(self, game_state)  
+        # Define constants
+        self.x_dim = self.game_state.x_max/100
+        self.y_dim = self.game_state.y_max/5
+        self.inertia = inertia
+        edge_offset = 1/20
+       
+        self.plot, = self.game_state.ax.plot([], [])
+        if is_left_striker:
+            x_pos = self.game_state.x_max*edge_offset
+        else:
+            x_pos = self.game_state.x_max*(1-edge_offset)
+        
+        self.position = np.array([x_pos, 0])
+        self.velocity = 0
+    
+    def move(self, loc):
+        inertia = self.inertia
+        previous_pos = self.position[1]
+        self.position[1] = (inertia)*self.position[1] + (1-inertia)*(loc+1)/2*(self.y_max-self.y_dim)
+        self.velocity = self.position[1] - previous_pos
+        self.verticies = np.column_stack((self.position + np.array([0,0]), self.position + np.array([0,self.y_dim]), self.position + np.array([self.x_dim,self.y_dim]), self.position + np.array([self.x_dim,0]), self.position + np.array([0,0])))
+        
+    def draw(self):
+        self.plot.set_data(self.verticies)
+
+class StrikerCPU(Striker):
+    def move(self, loc):
+        max_velocity = 1/100*self.game_state.y_max
+        ball_loc = self.game_state.ball.position[1] - self.y_dim/2
+        previous_pos = self.position[1]
+        inertia = self.inertia
+        
+        next_position = (inertia)*self.position[1] + (1-inertia)*(ball_loc)
+        
+        is_in_bounds = (next_position + self.y_dim < self.game_state.y_max) and (next_position > 0)
+
+        self.velocity = next_position - previous_pos
+        
+        if is_in_bounds: 
+            if np.abs(self.velocity) < max_velocity:    
+                self.position[1] = next_position
+            if self.velocity > max_velocity:
+                self.position[1] += max_velocity
+            if self.velocity < -max_velocity:
+                self.position[1] += -max_velocity
+        
+        self.verticies = np.column_stack((self.position + np.array([0,0]), self.position + np.array([0,self.y_dim]), self.position + np.array([self.x_dim,self.y_dim]), self.position + np.array([self.x_dim,0]), self.position + np.array([0,0])))
+
+        
 class Ball(Actor):
-    def __init__(self, x_max, y_max, v_mag):
-        Actor.__init__(self, x_max, y_max)
-        self.v_mag = v_mag        
-        self.ball_position = np.array([2, 2])
-        self.ball_position_history = np.zeros((2, 5))
-        self.ball_velocity = self.v_mag*np.array([-1, -1])
+    def __init__(self, game_state):
+        Actor.__init__(self, game_state)
+        self.v_mag = self.game_state.v_mag        
+        self.position_history = np.zeros((2, 5))
+        self.velocity = self.game_state.v_mag*np.array([-1, -1])
+        self.plot, = self.game_state.ax.plot([], [], 'ro')
+        self.position = np.array([self.game_state.x_max/2, self.game_state.y_max/2])
+
 
     def bounce_ball(self):
-        next_ball_position = self.ball_position + self.ball_velocity
-        if next_ball_position[0] >= self.x_max-1 or next_ball_position[0] <= 0:
-            self.ball_velocity[0] = -1*self.ball_velocity[0]
-        if next_ball_position[1] >= self.y_max-1 or next_ball_position[1] <= 0:
-            self.ball_velocity[1] = -1*self.ball_velocity[1]
+        next_position = self.position + self.velocity
+        left_striker = self.game_state.left_striker
+        right_striker = self.game_state.right_striker
+
+        hit_left_edge = next_position[0] >= self.x_max-1
+        hit_right_edge = next_position[0] <= 0
+        hit_top_edge = next_position[1] >= self.y_max-1
+        hit_bottom_edge = next_position[1] <= 0
+
+        if hit_left_edge:
+            self.velocity[0] = -1*self.velocity[0]
+            self.game_state.score_point(is_left_point = False)
+        elif hit_right_edge:
+            self.velocity[0] = -1*self.velocity[0]
+            self.game_state.score_point(is_left_point = True)
+
+        if hit_top_edge or hit_bottom_edge:
+            self.velocity[1] = -1*self.velocity[1]
+        
+        if (left_striker.position[1] < self.position[1] < left_striker.position[1] + left_striker.y_dim) and (self.position[0] >= left_striker.position[0] + left_striker.x_dim) and (next_position[0] <= left_striker.position[0] + left_striker.x_dim):
+            self.velocity[0] = -1*self.velocity[0]
+            self.velocity[1] += 0*left_striker.velocity
+        if (right_striker.position[1] < self.position[1] < right_striker.position[1] + right_striker.y_dim) and (self.position[0] <= right_striker.position[0]) and (next_position[0] >= right_striker.position[0]):
+            self.velocity[0] = -1*self.velocity[0]
+            self.velocity[1] += 0*right_striker.velocity
         return
 
-    def move_ball(self):
-        self.ball_position = self.ball_position + self.ball_velocity
-        self.ball_position_history = self.ball_position_history[:, 1:]
-        self.ball_position_history = np.column_stack((self.ball_position_history, self.ball_position))
+    def move(self):
+        self.position = self.position + self.velocity
+        self.position_history = self.position_history[:, 1:]
+        self.position_history = np.column_stack((self.position_history, self.position))
         return
-        
+    
+    def draw(self):
+        self.plot.set_data(self.position_history[:, -1])
+
 
 game_state = GameState()
 
+fps = 10
 def update(frame):
-    # update(ball_position, ball_velocity, game_board)
+    # update(position, velocity, game_board)
     global game_state
-    
-    game_state.update_state()
+        
+    left_striker_loc = np.sin(4*1/fps*frame)
+    right_striker_loc = np.cos(4*1/fps*2*frame)
+    game_state.update_state(left_striker_loc, right_striker_loc)
     game_state.refresh_display()
 
-    #time.sleep(1)
-    #print(game_board)
-    return game_state.display
+        #time.sleep(1)
+        #print(game_board)
+    return game_state.ax
 
-ani = anim.FuncAnimation(game_state.fig, update, frames=np.linspace(0, 2*np.pi, 128), blit=False, interval = 1)
+ani = anim.FuncAnimation(game_state.fig, update, frames=np.linspace(0, fps*np.pi, 128), blit=False, interval = 10)
+#ani.save('game_state.gif', writer="pillow writer")
+
 plt.show()
