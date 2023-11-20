@@ -1,14 +1,14 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib.animation as anim
-import time
+import os
 
 class GameState:
     def __init__(self):
         # Set constants
-        self.x_max = 50000
+        self.x_max = 70000
         self.y_max = 40000
-        self.v_mag = 500
+        self.v_mag = 350
         
         # Setup figure and axes
         self.fig, self.ax = plt.subplots()
@@ -85,7 +85,7 @@ class Striker(Actor):
         self.velocity = 0
     
     def move(self, loc):
-        inertia = self.inertia
+        inertia = self.inertia*0
         previous_pos = self.position[1]
         self.position[1] = (inertia)*self.position[1] + (1-inertia)*(loc+1)/2*(self.y_max-self.y_dim)
         self.velocity = self.position[1] - previous_pos
@@ -169,11 +169,28 @@ class Ball(Actor):
 game_state = GameState()
 
 fps = 10
+file_path = "../../input_output/sensor_data.csv"
+full_path = os.path.abspath(os.path.join(os.getcwd(), file_path))
+
+latest_reading = 0
+
 def update(frame):
     # update(position, velocity, game_board)
     global game_state
+    global latest_reading
+
+    with open(full_path, 'r') as file:
+        reading = file.read()
+        if reading != '':
+            reading = float(reading)
+        else:
+            reading = latest_reading
+
+        left_striker_loc = reading
+        latest_reading = reading
+        file.close()
         
-    left_striker_loc = np.sin(4*1/fps*frame)
+    #left_striker_loc = np.sin(4*1/fps*frame)
     right_striker_loc = np.cos(4*1/fps*2*frame)
     game_state.update_state(left_striker_loc, right_striker_loc)
     game_state.refresh_display()
