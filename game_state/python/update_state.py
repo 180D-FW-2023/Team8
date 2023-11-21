@@ -170,6 +170,7 @@ class Ball(Actor):
 # Initialize game state object
 game_state = GameState()
 
+fps = 10
 # Get sensor data file path
 file_path = os.path.join("..", "..", "input_output", "sensor_data.csv")
 dir_path = os.path.dirname(__file__)
