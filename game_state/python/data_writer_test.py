@@ -3,6 +3,7 @@ import numpy as np
 import os
 import time
 
+# Get sensor data file path
 file_path = os.path.join("..", "..", "input_output", "sensor_data.csv")
 dir_path = os.path.dirname(__file__)
 os.chdir(dir_path)
