@@ -1,6 +1,14 @@
 import cv2 as cv
 import numpy as np
+import matplotlib.pyplot as plt
+import os
+import time
 
+file_path = "..\..\OneDrive\Documents\GitHub\Team8\input\sensor_data.csv"
+full_path = os.path.abspath(os.path.join(os.getcwd(), file_path))
+print(file_path)
+print(os.getcwd())
+print(full_path)
 flag = 0
 # I was running into an issue where the countours object (which is an array of arrays I think) was 
 # initialized as empty on the first run through, or atleast the compiler believed it to be. So, the
@@ -44,15 +52,20 @@ while(1):
                 h_max = h_temp
                 holder = i
         cnt = contours[holder]
-        #cnt = contours[len(contours)-1] <- I swear to god I have no idea what I was testing with this, but maybe I was cooking so I'll leave it.
+        #cnt = contours[len(contours)-1] <- I swear to god I have no idea what I was testing with this, 
+        # but maybe I was cooking so I'll leave it.
         x,y,w,h = cv.boundingRect(cnt)
         cv.rectangle(frame,(x,y),(x+w,y+h),(0,0,255),2)
         centroidx = x+(w//2)
         centroidy = y+(h//2)
         cv.circle(frame, (centroidx, centroidy), 5, (0,0,255), -1)
         scaled_centroidx = ((centroidx/(width//2))-1)
-        print(scaled_centroidx) # this is the value we need
+        #print(scaled_centroidx) <-this is the value we need
         #print(x , y, w, h)
+        with open(full_path, 'w') as file:
+            file.write(str(scaled_centroidx))
+            file.close()
+    time.sleep(0.01)
     cv.imshow('frame',frame)
     cv.imshow('mask',mask)
     cv.imshow('blur',blur)
