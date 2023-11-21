@@ -1,17 +1,20 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib.animation as anim
+import matplotlib.patches as patches
 import os
 
 class GameState:
     def __init__(self):
         # Set constants
-        self.x_max = 70000
-        self.y_max = 40000
-        self.v_mag = 350
+        resolution = 70000
+        self.x_max = 1*resolution
+        self.y_max = 4/7*resolution
+        self.v_mag = 1/200*resolution
         
         # Setup figure and axes
         self.fig, self.ax = plt.subplots()
+        self.ax.set_aspect("equal")
         self.ax.set_xlim(0,self.x_max)
         self.ax.set_ylim(0,self.y_max)
         self.ax.get_xaxis().set_ticks([])
@@ -21,7 +24,10 @@ class GameState:
 
         # Draw Scene
         center_line = np.array([[self.x_max/2, self.x_max/2], [0, self.y_max]])
-        self.ax.plot(center_line[0, :], center_line[1, :], color = 'gray')
+        center_circle = patches.Circle((self.x_max/2, self.y_max/2), radius = self.x_max/10, edgecolor = 'gray', fill = False, linewidth = 1, zorder = 1)
+        self.ax.add_patch(center_circle)
+        self.ax.plot(center_line[0, :], center_line[1, :], color = 'gray', linewidth = 1, zorder = 1)
+
         
         # Create actors
         self.ball = Ball(self)
