@@ -75,6 +75,7 @@ class Striker(Actor):
         self.inertia = inertia
         edge_offset = 1/20
        
+       # Create plot
         self.plot, = self.game_state.ax.plot([], [])
         if is_left_striker:
             x_pos = self.game_state.x_max*edge_offset
@@ -166,9 +167,8 @@ class Ball(Actor):
         self.plot.set_data(self.position_history[:, -1])
 
 
+# Initialize game state object
 game_state = GameState()
-
-fps = 10
 
 # Get sensor data file path
 file_path = os.path.join("..", "..", "input_output", "sensor_data.csv")
@@ -176,16 +176,17 @@ dir_path = os.path.dirname(__file__)
 os.chdir(dir_path)
 full_path = os.path.abspath(os.path.join(os.getcwd(), file_path))
 
-latest_reading = 0
+latest_reading = 0 # keep track of previous reading in case data file is empty
 
 def update(frame):
     # update(position, velocity, game_board)
     global game_state
     global latest_reading
 
+    # open data file for reading
     with open(full_path, 'r') as file:
         reading = file.read()
-        if reading != '':
+        if reading != '': # make sure reading is valid; if not, use previous reading
             reading = float(reading)
         else:
             reading = latest_reading
@@ -194,13 +195,11 @@ def update(frame):
         latest_reading = reading
         file.close()
         
-    #left_striker_loc = np.sin(4*1/fps*frame)
     right_striker_loc = np.cos(4*1/fps*2*frame)
+    
     game_state.update_state(left_striker_loc, right_striker_loc)
     game_state.refresh_display()
 
-        #time.sleep(1)
-        #print(game_board)
     return game_state.ax
 
 ani = anim.FuncAnimation(game_state.fig, update, frames=np.linspace(0, fps*np.pi, 128), blit=False, interval = 10)
