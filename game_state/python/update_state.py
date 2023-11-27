@@ -1,17 +1,21 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib.animation as anim
+import matplotlib.patches as patches
+import time
 import os
 
 class GameState:
-    def __init__(self):
+    def __init__(self, ball_velocity):
         # Set constants
-        self.x_max = 70000
-        self.y_max = 40000
-        self.v_mag = 350
+        resolution = 700000
+        self.x_max = 1*resolution
+        self.y_max = 4/7*resolution
+        self.v_mag = ball_velocity*self.x_max
         
         # Setup figure and axes
         self.fig, self.ax = plt.subplots()
+        self.ax.set_aspect("equal")
         self.ax.set_xlim(0,self.x_max)
         self.ax.set_ylim(0,self.y_max)
         self.ax.get_xaxis().set_ticks([])
@@ -21,12 +25,15 @@ class GameState:
 
         # Draw Scene
         center_line = np.array([[self.x_max/2, self.x_max/2], [0, self.y_max]])
-        self.ax.plot(center_line[0, :], center_line[1, :], color = 'gray')
+        center_circle = patches.Circle((self.x_max/2, self.y_max/2), radius = self.x_max/10, edgecolor = 'gray', fill = False, linewidth = 1, zorder = 1)
+        self.ax.add_patch(center_circle)
+        self.ax.plot(center_line[0, :], center_line[1, :], color = 'gray', linewidth = 1, zorder = 1)
+
         
         # Create actors
         self.ball = Ball(self)
         self.left_striker = Striker(self, is_left_striker=True, inertia = 0)
-        self.right_striker = StrikerCPU(self, is_left_striker=False, inertia = 0.8)
+        self.right_striker = StrikerCPU(self, is_left_striker=False, inertia = 0.95)
         self.score = [0,0]
         return
 
@@ -75,12 +82,14 @@ class Striker(Actor):
         self.inertia = inertia
         edge_offset = 1/20
        
-       # Create plot
-        self.plot, = self.game_state.ax.plot([], [])
+        # Create plot
         if is_left_striker:
             x_pos = self.game_state.x_max*edge_offset
+            striker_color = 'blue'
         else:
             x_pos = self.game_state.x_max*(1-edge_offset)
+            striker_color = 'green'
+        self.plot, = self.game_state.ax.plot([], [], color = striker_color)
         
         self.position = np.array([x_pos, 0])
         self.velocity = 0
@@ -124,8 +133,8 @@ class Ball(Actor):
         Actor.__init__(self, game_state)
         self.v_mag = self.game_state.v_mag        
         self.position_history = np.zeros((2, 5))
-        self.velocity = self.game_state.v_mag*np.array([-1, -1])
-        self.plot, = self.game_state.ax.plot([], [], 'ro')
+        self.velocity = self.game_state.v_mag*np.array([-np.sqrt(2)/2, -np.sqrt(2)/2])
+        self.plot = self.game_state.ax.scatter([], [], color = 'red')
         self.position = np.array([self.game_state.x_max/2, self.game_state.y_max/2])
 
 
@@ -151,10 +160,8 @@ class Ball(Actor):
         
         if (left_striker.position[1] < self.position[1] < left_striker.position[1] + left_striker.y_dim) and (self.position[0] >= left_striker.position[0] + left_striker.x_dim) and (next_position[0] <= left_striker.position[0] + left_striker.x_dim):
             self.velocity[0] = -1*self.velocity[0]
-            self.velocity[1] += 0*left_striker.velocity
         if (right_striker.position[1] < self.position[1] < right_striker.position[1] + right_striker.y_dim) and (self.position[0] <= right_striker.position[0]) and (next_position[0] >= right_striker.position[0]):
             self.velocity[0] = -1*self.velocity[0]
-            self.velocity[1] += 0*right_striker.velocity
         return
 
     def move(self):
@@ -164,13 +171,16 @@ class Ball(Actor):
         return
     
     def draw(self):
-        self.plot.set_data(self.position_history[:, -1])
+        self.plot.set_offsets(self.position_history.T)
+        self.plot.set_alpha([0.2, 0.4, 0.6, 0.8, 1])
 
 
 # Initialize game state object
-game_state = GameState()
+frame_rate = 120*2 # frames per second
+ball_velocity = 3 # proportion of board x max per second
 
-fps = 10
+game_state = GameState(ball_velocity/frame_rate)
+
 # Get sensor data file path
 file_path = os.path.join("..", "..", "input_output", "sensor_data.csv")
 dir_path = os.path.dirname(__file__)
@@ -195,15 +205,13 @@ def update(frame):
         left_striker_loc = reading
         latest_reading = reading
         file.close()
-        
-    right_striker_loc = np.cos(4*1/fps*2*frame)
-    
+    right_striker_loc = 0
     game_state.update_state(left_striker_loc, right_striker_loc)
     game_state.refresh_display()
-
+    time.sleep(1/frame_rate)
     return game_state.ax
 
-ani = anim.FuncAnimation(game_state.fig, update, frames=np.linspace(0, fps*np.pi, 128), blit=False, interval = 10)
+ani = anim.FuncAnimation(game_state.fig, update, frames=np.linspace(0, 2), blit=False, interval = 1)
 #ani.save('game_state.gif', writer="pillow writer")
 
 plt.show()
