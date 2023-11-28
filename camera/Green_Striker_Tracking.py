@@ -4,7 +4,9 @@ import matplotlib.pyplot as plt
 import os
 import time
 
-file_path = "..\..\OneDrive\Documents\GitHub\Team8\input\sensor_data.csv"
+file_path = os.path.join("..", "input_output", "sensor_data.csv")
+dir_path = os.path.dirname(__file__)
+os.chdir(dir_path)
 full_path = os.path.abspath(os.path.join(os.getcwd(), file_path))
 print(file_path)
 print(os.getcwd())
@@ -60,12 +62,11 @@ while(1):
         centroidy = y+(h//2)
         cv.circle(frame, (centroidx, centroidy), 5, (0,0,255), -1)
         scaled_centroidx = ((centroidx/(width//2))-1)
-        #print(scaled_centroidx) <-this is the value we need
+        print(scaled_centroidx)
         #print(x , y, w, h)
         with open(full_path, 'w') as file:
             file.write(str(scaled_centroidx))
             file.close()
-    time.sleep(0.01)
     cv.imshow('frame',frame)
     cv.imshow('mask',mask)
     cv.imshow('blur',blur)
