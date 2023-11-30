@@ -180,6 +180,7 @@ frame_rate = 120 * 2  # frames per second
 ball_velocity = 3  # proportion of board x max per second
 # Initialize game state object
 game_state = GameState(ball_velocity / frame_rate)
+ani = anim.FuncAnimation
 
 def Update_initial(newval):
     initial = newval
@@ -191,7 +192,8 @@ def Test_func():
         time.sleep(1)
 
 def UpdateFunc():
-    global update
+    global game_state
+    global ani
     game_state = GameState(ball_velocity / frame_rate)
     ani = anim.FuncAnimation(game_state.fig, update, frames=list(np.linspace(0, 2)), blit=False, interval=1)
     # ani.save('game_state.gif', writer="pillow writer")
