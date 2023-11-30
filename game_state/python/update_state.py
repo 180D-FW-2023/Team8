@@ -174,44 +174,38 @@ class Ball(Actor):
         self.plot.set_offsets(self.position_history.T)
         self.plot.set_alpha([0.2, 0.4, 0.6, 0.8, 1])
 
+initial = 0.5
 
+frame_rate = 120 * 2  # frames per second
+ball_velocity = 3  # proportion of board x max per second
 # Initialize game state object
-frame_rate = 120*2 # frames per second
-ball_velocity = 3 # proportion of board x max per second
+game_state = GameState(ball_velocity / frame_rate)
 
-game_state = GameState(ball_velocity/frame_rate)
+def Update_initial(newval):
+    initial = newval
+    return initial
 
-# Get sensor data file path
-file_path = os.path.join("..", "..", "input_output", "sensor_data.csv")
-dir_path = os.path.dirname(__file__)
-os.chdir(dir_path)
-full_path = os.path.abspath(os.path.join(os.getcwd(), file_path))
+def Test_func():
+    while True:
+        print(f"TESTING RUN: {initial}")
+        time.sleep(1)
 
-latest_reading = 0 # keep track of previous reading in case data file is empty
+def UpdateFunc():
+    global update
+    game_state = GameState(ball_velocity / frame_rate)
+    ani = anim.FuncAnimation(game_state.fig, update, frames=list(np.linspace(0, 2)), blit=False, interval=1)
+    # ani.save('game_state.gif', writer="pillow writer")
+    plt.show()
 
 def update(frame):
     # update(position, velocity, game_board)
     global game_state
     global latest_reading
 
-    # open data file for reading
-    with open(full_path, 'r') as file:
-        reading = file.read()
-        if reading != '': # make sure reading is valid; if not, use previous reading
-            reading = float(reading)
-        else:
-            reading = latest_reading
-
-        left_striker_loc = reading
-        latest_reading = reading
-        file.close()
+    left_striker_loc = initial  # 1
+    latest_reading = initial  # 2
     right_striker_loc = 0
     game_state.update_state(left_striker_loc, right_striker_loc)
     game_state.refresh_display()
-    time.sleep(1/frame_rate)
+    time.sleep(1 / frame_rate)
     return game_state.ax
-
-ani = anim.FuncAnimation(game_state.fig, update, frames=np.linspace(0, 2), blit=False, interval = 1)
-#ani.save('game_state.gif', writer="pillow writer")
-
-plt.show()
