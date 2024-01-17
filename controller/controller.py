@@ -1,3 +1,4 @@
+import threading
 from threading import Thread
 import subprocess
 import time
@@ -12,6 +13,8 @@ import matplotlib.animation as anim
 import matplotlib.patches as patches
 import time
 
+# Part 1: Sensor data
+
 file_path = os.path.join("..", "input_output", "sensor_data.csv")
 dir_path = os.path.dirname(__file__)
 os.chdir(dir_path)
@@ -20,11 +23,14 @@ print(file_path)
 print(os.getcwd())
 print(full_path)
 flag = 0
+shared = queue.Queue()
 
 def CaptureDisc():
     # I was running into an issue where the countours object (which is an array of arrays I think) was
     # initialized as empty on the first run through, or atleast the compiler believed it to be. So, the
     # purpose of the flag is to halt the cnt = contours[i] code until contours is correctly populated
+
+    flag = 0
     cap = cv.VideoCapture(1)
     while(1):
         # Standard setup for OpenCV video processing
@@ -74,9 +80,14 @@ def CaptureDisc():
             scaled_centroidx = ((centroidx/(width//2))-1)
             print(scaled_centroidx)
             #print(x , y, w, h)
-            with open(full_path, 'w') as file:
+            shared.put(scaled_centroidx)
+            """
+            //  with open(full_path, 'w') as file:
                 file.write(str(scaled_centroidx))
                 file.close()
+                
+            """
+
         cv.imshow('frame',frame)
         cv.imshow('mask',mask)
         cv.imshow('blur',blur)
@@ -87,23 +98,9 @@ def CaptureDisc():
         if k == 27:
             break
         if flag == 0:
+            print("here")
             flag = 1
     cv.destroyAllWindows()
-
-
-def run_subprocesses():
-    #data_writer_test_path = os.path.join("..", "game_state", "python", "data_writer_test.py")
-    update_state_path = os.path.join("..", "game_state", "python", "update_state.py")
-    striker_tracking_path = os.path.join("..", "camera", "Green_Striker_Tracking.py")
-
-    #data_writer_test = subprocess.Popen(['python', data_writer_test_path])
-    striker_tracking = subprocess.Popen(['python', striker_tracking_path])
-    update_state = subprocess.Popen(['python', update_state_path])
-
-    time.sleep(15)
-    update_state.kill()
-    striker_tracking.kill()
-    return
 
 
 class GameState:
@@ -292,10 +289,6 @@ ball_velocity = 3  # proportion of board x max per second
 game_state = GameState(ball_velocity / frame_rate)
 ani = anim.FuncAnimation
 
-def Update_initial(newval):
-    initial = newval
-    return initial
-
 def UpdateFunc():
     global game_state
     global ani
@@ -304,20 +297,58 @@ def UpdateFunc():
     # ani.save('game_state.gif', writer="pillow writer")
     plt.show()
 
+left_striker_loc = initial  # 1
+latest_reading = initial  # 2
+right_striker_loc = 0
+
 def update(frame):
+
+    global left_striker_loc, latest_reading, right_striker_loc
     # update(position, velocity, game_board)
     global game_state
     global latest_reading
-
-    left_striker_loc = initial  # 1
-    latest_reading = initial  # 2
-    right_striker_loc = 0
+    if not shared.empty():
+        latest_reading = shared.get_nowait()
+    left_striker_loc = latest_reading
     game_state.update_state(left_striker_loc, right_striker_loc)
     game_state.refresh_display()
     time.sleep(1 / frame_rate)
     return game_state.ax
 
-shared = queue.Queue()
+def run_threads():
+
+    # Queue objects in Python are thread-safe
+    """
+    thread1 = Thread(target=test1)
+    thread2 = Thread(target=test2)
+    :return:
+    """
+
+    thread1 = Thread(target=u.UpdateFunc)
+    thread2 = Thread(target=CaptureDisc)
+
+    # Begin threads
+    thread1.start()
+    thread2.start()
+
+    # End threads
+    thread1.join()
+    thread2.join()
+
+def run_subprocesses():
+    #data_writer_test_path = os.path.join("..", "game_state", "python", "data_writer_test.py")
+    update_state_path = os.path.join("..", "game_state", "python", "update_state.py")
+    striker_tracking_path = os.path.join("..", "camera", "Green_Striker_Tracking.py")
+
+    #data_writer_test = subprocess.Popen(['python', data_writer_test_path])
+    striker_tracking = subprocess.Popen(['python', striker_tracking_path])
+    update_state = subprocess.Popen(['python', update_state_path])
+
+    time.sleep(15)
+    update_state.kill()
+    striker_tracking.kill()
+    return
+
 
 def test1():
     for i in range(-10,10,1):
@@ -348,23 +379,39 @@ def test2():
             # Call update_state
 
 
-def run_threads():
+def main():
 
-    # Queue objects in Python are thread-safe
-    thread1 = Thread(target=test1)
-    thread2 = Thread(target=test2)
-    thread3 = Thread(target=u.UpdateFunc())
+    global game_state
+    global ani
+    global left_striker_loc, latest_reading, right_striker_loc
+    # update(position, velocity, game_board)
+    global latest_reading
+    game_state = GameState(ball_velocity / frame_rate)
+    ani = anim.FuncAnimation(game_state.fig, update, frames=list(np.linspace(0, 2)), blit=False, interval=1)
+    # ani.save('game_state.gif', writer="pillow writer")
+    plt.show()
+
+    # Start the threads
+    camera_thread = threading.Thread(target=CaptureDisc)
+    camera_thread.start()
+
+    while True:
+        # Update game state and refresh display
+        # if not shared.empty():
+            #
+            #return game_state.ax
+
+        if not shared.empty():
+            latest_reading = shared.get_nowait()
+            left_striker_loc = latest_reading
+            game_state.update_state(left_striker_loc, right_striker_loc)
+            game_state.refresh_display()
+        time.sleep(1 / frame_rate)
+        # Redraw the Matplotlib figure
+        plt.pause(0.01)
+
+    camera_thread.join()
 
 
-    # Begin threads
-    thread1.start()
-    thread2.start()
-    thread3.start()
-
-    # End threads
-    thread1.join()
-    thread2.join()
-    thread3.join()
-
-
-
+if __name__ == "__main__":
+    main()
