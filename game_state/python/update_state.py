@@ -4,11 +4,12 @@ import matplotlib.animation as anim
 import matplotlib.patches as patches
 import time
 import os
+import pygame
 
 class GameState:
     def __init__(self, ball_velocity):
         # Set constants
-        resolution = 700000
+        resolution = 700
         self.x_max = 1*resolution
         self.y_max = 4/7*resolution
         self.v_mag = ball_velocity*self.x_max
@@ -22,6 +23,14 @@ class GameState:
         self.ax.get_yaxis().set_ticks([])
         self.ax.get_xaxis().set_visible(False)
         self.ax.get_yaxis().set_visible(False)
+
+        pygame.init()
+        pygame.font.init()
+        self.screen = pygame.display.set_mode((self.x_max, self.y_max))
+        self.clock = pygame.time.Clock()
+        self.running = True
+        self.dt = 0
+        self.font = pygame.font.Font(None, 36)
 
         # Draw Scene
         center_line = np.array([[self.x_max/2, self.x_max/2], [0, self.y_max]])
@@ -57,10 +66,16 @@ class GameState:
             self.ball.position = self.right_striker.position
     
     def refresh_display(self):
+        self.screen.fill("white")
         # Draw actor plots
         self.ball.draw()
         self.left_striker.draw()
         self.right_striker.draw()
+
+        score_text = self.font.render(f'Score: {self.score}', True, (0, 0, 0))
+        self.screen.blit(score_text, (0, 0))
+
+        pygame.display.flip()
 
 # Base class for actors
 class Actor:
@@ -103,6 +118,8 @@ class Striker(Actor):
         
     def draw(self):
         self.plot.set_data(self.verticies)
+        pygame_points = (self.verticies[:, 0], self.verticies[:, 1], self.verticies[:, 2], self.verticies[:, 3])  
+        pygame.draw.polygon(self.game_state.screen, "green", pygame_points)
 
 class StrikerCPU(Striker):
     def move(self, loc):
@@ -173,6 +190,9 @@ class Ball(Actor):
     def draw(self):
         self.plot.set_offsets(self.position_history.T)
         self.plot.set_alpha([0.2, 0.4, 0.6, 0.8, 1])
+
+        pygame_pos = pygame.Vector2(self.position[0], self.position[1])
+        pygame.draw.circle(self.game_state.screen, "red", pygame_pos, self.game_state.x_max/100)
 
 
 # Initialize game state object
