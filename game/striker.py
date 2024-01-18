@@ -25,7 +25,7 @@ class Striker(actor.Actor):
         self.velocity = 0
 
     def move(self, loc):
-        inertia = self.inertia * 0
+        inertia = self.inertia * 0.5
         previous_pos = self.position[1]
         self.position[1] = (inertia) * self.position[1] + (1 - inertia) * (loc + 1) / 2 * (self.y_max - self.y_dim)
         self.velocity = self.position[1] - previous_pos
