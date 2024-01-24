@@ -111,14 +111,22 @@ class Striker(Actor):
         self.velocity = np.array([0,0])
     
     def move(self, loc):
+        loc2 = -1
         inertia = self.inertia*0
-        previous_pos = self.position[1]
-        next_pos = (inertia)*self.position[1] + (1-inertia)*(loc+1)/2*(self.y_max-self.y_dim)
-        self.velocity = next_pos - previous_pos
-        if np.abs(self.velocity) < self.max_velocity:
-            self.position[1] = next_pos
+
+        previous_x_pos = self.position[0]
+        next_x_pos = (inertia)*self.position[1] + (1-inertia)*(loc2+1)/2*(self.y_max-self.y_dim)
+
+        previous_y_pos = self.position[1]
+        next_y_pos = (inertia)*self.position[1] + (1-inertia)*(loc+1)/2*(self.y_max-self.y_dim)
+
+        self.velocity = np.array([next_x_pos - previous_x_pos, next_y_pos - previous_y_pos])
+        if np.abs(self.velocity[1]) < self.max_velocity:
+            self.position[1] = next_y_pos
         else:
-            self.position[1] += np.sign(self.velocity)*self.max_velocity
+            self.position[1] += np.sign(self.velocity[1])*self.max_velocity
+        
+        self.position[0] = next_x_pos
 
         self.verticies = np.column_stack((self.position + np.array([0,0]), self.position + np.array([0,self.y_dim]), self.position + np.array([self.x_dim,self.y_dim]), self.position + np.array([self.x_dim,0]), self.position + np.array([0,0])))
         
@@ -141,7 +149,7 @@ class StrikerCPU(Striker):
         next_y_position = (inertia)*previous_y_pos + (1-inertia)*(ball_y_loc) + (inertia)*self.velocity[1]
 
         normalized_distance_to_boundary = np.min(((x_boundary-ball_x_loc)/x_boundary, 1))
-        next_x_position = (inertia)*previous_x_pos + (1-inertia)*(x_boundary + (self.game_state.x_max-x_boundary-self.x_dim)*normalized_distance_to_boundary) + (inertia)*self.velocity[0]*0.1
+        next_x_position = (inertia)*previous_x_pos + (1-inertia)*(x_boundary + (self.game_state.x_max-x_boundary-self.x_dim)*normalized_distance_to_boundary) + (inertia)*self.velocity[0]*0.4*(1/(0.5+normalized_distance_to_boundary))
         
         is_in_bounds = (next_y_position + self.y_dim < self.game_state.y_max) and (next_y_position > 0)
 
@@ -195,7 +203,7 @@ class Ball(Actor):
         
         if (left_striker.position[1] < self.position[1] < left_striker.position[1] + left_striker.y_dim) and (self.position[0] >= left_striker.position[0] + left_striker.x_dim) and (next_position[0] <= left_striker.position[0] + left_striker.x_dim):
             self.velocity[0] = -1*self.velocity[0] 
-            self.velocity[1] += left_striker.velocity
+            self.velocity[1] += left_striker.velocity[1]
         if (right_striker.position[1] < self.position[1] < right_striker.position[1] + right_striker.y_dim) and (self.position[0] <= right_striker.position[0] + right_striker.x_dim) and (next_position[0] >= right_striker.position[0]):
             self.velocity[0] = -1*self.velocity[0] + right_striker.velocity[0]
             self.velocity[1] += right_striker.velocity[1]*0.3
