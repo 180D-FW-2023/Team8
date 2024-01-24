@@ -42,7 +42,7 @@ class GameState:
         # Create actors
         self.ball = Ball(self)
         self.left_striker = Striker(self, is_left_striker=True, inertia = 0)
-        self.right_striker = StrikerCPU(self, is_left_striker=False, inertia = 0.95)
+        self.right_striker = StrikerCPU(self, is_left_striker=False, inertia = 0.98)
         self.score = [0,0]
         return
 
@@ -108,7 +108,7 @@ class Striker(Actor):
         self.plot, = self.game_state.ax.plot([], [], color = striker_color)
         
         self.position = np.array([x_pos, 0])
-        self.velocity = 0
+        self.velocity = np.array([0,0])
     
     def move(self, loc):
         inertia = self.inertia*0
@@ -129,23 +129,26 @@ class Striker(Actor):
 
 class StrikerCPU(Striker):
     def move(self, loc):
-        max_velocity = self.max_velocity*1000
+        max_velocity = self.max_velocity*10
         ball_y_loc = self.game_state.ball.position[1] - self.y_dim/2
         ball_x_loc = self.game_state.ball.position[0]
         x_boundary = (4/5)*self.game_state.x_max
         previous_y_pos = self.position[1]
         previous_x_pos = self.position[0]
-        inertia = self.inertia*0
+        inertia = self.inertia
         
-        next_y_position = (inertia)*previous_y_pos + (1-inertia)*(ball_y_loc)
+        # Calculate next y position based on inertia and ball current location
+        next_y_position = (inertia)*previous_y_pos + (1-inertia)*(ball_y_loc) + (inertia)*self.velocity[1]
 
         normalized_distance_to_boundary = np.min(((x_boundary-ball_x_loc)/x_boundary, 1))
-        next_x_position = (inertia)*previous_x_pos + (1-inertia)*(x_boundary + (self.game_state.x_max-x_boundary-self.x_dim)*normalized_distance_to_boundary)
+        next_x_position = (inertia)*previous_x_pos + (1-inertia)*(x_boundary + (self.game_state.x_max-x_boundary-self.x_dim)*normalized_distance_to_boundary) + (inertia)*self.velocity[0]*0.1
         
         is_in_bounds = (next_y_position + self.y_dim < self.game_state.y_max) and (next_y_position > 0)
 
+        # Update instantaneous velocity
         self.velocity = np.array([next_x_position - previous_x_pos, next_y_position - previous_y_pos])
         
+        # Update striker x, y position based
         if is_in_bounds: 
             if np.abs(self.velocity[1]) < max_velocity:    
                 self.position[1] = next_y_position
