@@ -34,7 +34,7 @@ class GameState:
 
         # Draw Scene
         center_line = np.array([[0, self.y_max], [self.x_max/2, self.x_max/2]])
-        center_circle = patches.Circle((self.y_max/2, self.x_max/2), radius = self.y_max/10, edgecolor = 'gray', fill = False, linewidth = 1, zorder = 1)
+        center_circle = patches.Circle((self.y_max/2, self.x_max/2), radius = self.x_max/10, edgecolor = 'gray', fill = False, linewidth = 1, zorder = 1)
         self.ax.add_patch(center_circle)
         self.ax.plot(center_line[0, :], center_line[1, :], color = 'gray', linewidth = 1, zorder = 1)
 
@@ -42,7 +42,7 @@ class GameState:
         # Create actors
         self.ball = Ball(self)
         self.left_striker = Striker(self, is_left_striker=True, inertia = 0)
-        self.right_striker = StrikerCPU(self, is_left_striker=False, inertia = 0.98)
+        self.right_striker = StrikerCPU(self, is_left_striker=False, inertia = 0.96)
         self.score = [0,0]
         return
 
@@ -110,15 +110,17 @@ class Striker(Actor):
         self.position = np.array([x_pos, 0])
         self.velocity = np.array([0,0])
     
-    def move(self, loc):
-        loc2 = -1
+    def move(self, y_loc):
+        x_loc = -1
+        normalized_x_loc = self.x_max/20 + (x_loc+1)/2*self.x_max/5
+        normalized_y_loc = (y_loc+1)/2*(self.y_max-self.y_dim)
         inertia = self.inertia*0
 
         previous_x_pos = self.position[0]
-        next_x_pos = (inertia)*self.position[1] + (1-inertia)*(loc2+1)/2*(self.y_max-self.y_dim)
+        next_x_pos = (inertia)*self.position[1] + (1-inertia)*(normalized_x_loc)
 
         previous_y_pos = self.position[1]
-        next_y_pos = (inertia)*self.position[1] + (1-inertia)*(loc+1)/2*(self.y_max-self.y_dim)
+        next_y_pos = (inertia)*self.position[1] + (1-inertia)*(normalized_y_loc)
 
         self.velocity = np.array([next_x_pos - previous_x_pos, next_y_pos - previous_y_pos])
         if np.abs(self.velocity[1]) < self.max_velocity:
@@ -145,9 +147,10 @@ class StrikerCPU(Striker):
         previous_x_pos = self.position[0]
         inertia = self.inertia
         
-        # Calculate next y position based on inertia and ball current location
+        # Calculate next y position based on inertia, ball current y position, and velocity
         next_y_position = (inertia)*previous_y_pos + (1-inertia)*(ball_y_loc) + (inertia)*self.velocity[1]
 
+        # Calculate next x position based on inertia, ball current distance to the right edge, and velocity 
         normalized_distance_to_boundary = np.min(((x_boundary-ball_x_loc)/x_boundary, 1))
         next_x_position = (inertia)*previous_x_pos + (1-inertia)*(x_boundary + (self.game_state.x_max-x_boundary-self.x_dim)*normalized_distance_to_boundary) + (inertia)*self.velocity[0]*0.4*(1/(0.5+normalized_distance_to_boundary))
         
@@ -207,14 +210,24 @@ class Ball(Actor):
         if (right_striker.position[1] < self.position[1] < right_striker.position[1] + right_striker.y_dim) and (self.position[0] <= right_striker.position[0] + right_striker.x_dim) and (next_position[0] >= right_striker.position[0]):
             self.velocity[0] = -1*self.velocity[0] + right_striker.velocity[0]
             self.velocity[1] += right_striker.velocity[1]*0.3
-
-        self.velocity = self.velocity*0.999
         return
 
     def move(self):
         self.position = self.position + self.velocity
         self.position_history = self.position_history[:, 1:]
         self.position_history = np.column_stack((self.position_history, self.position))
+        
+        # Friction
+        new_x_velocity = self.velocity[0] - 0.01*np.sign(self.velocity[0])
+        self.velocity[0] = new_x_velocity*(np.sign(new_x_velocity) == np.sign(self.velocity[0]))
+        new_y_velocity = self.velocity[1] - 0.01*np.sign(self.velocity[1])
+        self.velocity[1] = new_y_velocity*(np.sign(new_y_velocity) == np.sign(self.velocity[1]))
+
+        # Gravity
+        if self.position[0] < self.x_max/2:
+            self.velocity[0] += 0.001*self.inital_velocity[0]*1/(0.5 + self.position[0]/self.x_max)
+        else:
+            self.velocity[0] += -0.001*self.inital_velocity[0]*1/(0.5 + (self.x_max/2-self.position[0])/self.x_max)
         return
     
     def draw(self):
