@@ -38,7 +38,7 @@ class Striker(actor.Actor):
         next_y_pos = (inertia) * self.position[1] + (1 - inertia) * (normalized_y_loc)
 
         self.velocity = np.array([next_x_pos - previous_x_pos, next_y_pos - previous_y_pos])
-        if np.abs(self.velocity[1]) < self.max_velocity:
+        if np.abs(self.velocity[1]) < self.max_velocity*100:
             self.position[1] = next_y_pos
         else:
             self.position[1] += np.sign(self.velocity[1]) * self.max_velocity
