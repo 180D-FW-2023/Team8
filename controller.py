@@ -49,11 +49,12 @@ def main(self=None):
     right_striker_loc = 0
     game_state = game_details.GameState(ball_velocity / frame_rate)
     ani = anim.FuncAnimation(game_state.fig, update, frames=list(np.linspace(0, 2)), blit=False, interval=1)
-    plt.show()
 
     # Start the threads
     camera_thread = threading.Thread(target=capture.CaptureDisc)
     camera_thread.start()
+
+    plt.show()
 
     while True:
         '''
@@ -65,7 +66,7 @@ def main(self=None):
 
         time.sleep(1 / frame_rate)
         # Redraw the Matplotlib figure
-        plt.pause(0.01)
+        # plt.pause(0.01)
 
     camera_thread.join()
 
