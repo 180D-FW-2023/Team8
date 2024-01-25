@@ -3,7 +3,6 @@ from threading import Thread
 import subprocess
 import os
 import queue
-from game_state.python import update_state as u
 import traceback
 import matplotlib.pyplot as plt
 import numpy as np
