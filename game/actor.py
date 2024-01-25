@@ -8,5 +8,5 @@ class Actor:
         self.y_max = game_state.y_max
         self.position = np.array([0, 0])
 
-    def move(self, loc):
+    def move(self, y_loc=0):
         pass

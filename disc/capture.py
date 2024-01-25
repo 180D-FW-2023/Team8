@@ -9,7 +9,7 @@ def CaptureDisc():
 
     global flag
     flag = 0
-    cap = cv.VideoCapture(1)
+    cap = cv.VideoCapture(0)
     while (1):
         _, frame = cap.read()
         height, width, _ = frame.shape
@@ -39,6 +39,7 @@ def CaptureDisc():
             centroidy = y + (h // 2)
             cv.circle(frame, (centroidx, centroidy), 5, (0, 0, 255), -1)
             scaled_centroidx = ((centroidx / (width // 2)) - 1)
+            scaled_centroidx *= -1
             print(scaled_centroidx)
             config.shared.put(scaled_centroidx)
         k = cv.waitKey(5) & 0xFF

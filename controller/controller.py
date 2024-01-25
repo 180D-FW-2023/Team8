@@ -57,12 +57,12 @@ def main(self=None):
     camera_thread.start()
 
     while True:
-
-
+        '''
         #if not config.shared.empty():
         #    latest_reading = config.shared.get_nowait()
         #game_state.refresh_display()
-
+        
+        '''
 
         time.sleep(1 / frame_rate)
         # Redraw the Matplotlib figure
