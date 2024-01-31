@@ -16,7 +16,7 @@ flag = 0
 # I was running into an issue where the countours object (which is an array of arrays I think) was 
 # initialized as empty on the first run through, or atleast the compiler believed it to be. So, the
 # purpose of the flag is to halt the cnt = contours[i] code until contours is correctly populated
-cap = cv.VideoCapture(2)
+cap = cv.VideoCapture(1)
 while(1):
     # Standard setup for OpenCV video processing
     _, frame = cap.read()
@@ -27,12 +27,15 @@ while(1):
     #lower_green = np.array([40,51,51])
     #upper_green = np.array([85,230,153])
     #Values above are for my laptop camera, values below are for USB camera (for project)
-    lower_green = np.array([33,16,126])
-    upper_green = np.array([67,107,199])
+    #lower_green = np.array([33,16,126])
+    #upper_green = np.array([67,107,199])
+    #Old Camera Above, New Camera Below
+    lower_green = np.array([51,71,63])
+    upper_green = np.array([86,255,153])
     # Threshold the HSV image to get only green colors, threshold values were received from the max 
     # and min observed values from an online color picker, with a  sample image of the target object
     mask = cv.inRange(hsv, lower_green, upper_green)
-    blur = cv.medianBlur(mask,29)
+    blur = cv.medianBlur(mask,19)
     # median blur to remove salt and pepper noise
     blur2 = cv.blur(blur,(20,20))
     # standard blur appears to be sufficient for our case. 20,20 was chosen experimentally
@@ -94,5 +97,5 @@ while(1):
         break
     if flag == 0:
         flag = 1
-    time.sleep(0.5)
+    #time.sleep(0.5)
 cv.destroyAllWindows()
