@@ -41,7 +41,7 @@ def CaptureDisc():
             scaled_centroidx = ((centroidx / (width // 2)) - 1)
             scaled_centroidx *= -1
             print(scaled_centroidx)
-            config.shared.put(scaled_centroidx)
+            config.camera.put(scaled_centroidx)
         k = cv.waitKey(5) & 0xFF
         if k == 27:
             break

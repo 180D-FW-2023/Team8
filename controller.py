@@ -13,9 +13,11 @@ from game import game_details
 from game import manager
 from game import launcher
 from config import config
+from fusion import sensor_fusion
 
 def main(self=None):
-
+    config.camera = queue.Queue()
+    config.imu = queue.Queue()
     config.shared = queue.Queue()
 
     launcher_instance = launcher.Launcher()
@@ -26,6 +28,9 @@ def main(self=None):
     # Start the threads
     camera_thread = threading.Thread(target=capture.CaptureDisc)
     camera_thread.start()
+
+    fusion_thread = threading.Thread(target=sensor_fusion.run_fusion)
+    fusion_thread.start()
 
     manager_instance.open_window()
 
