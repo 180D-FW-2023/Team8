@@ -13,7 +13,7 @@ def CaptureDisc():
     # I was running into an issue where the countours object (which is an array of arrays I think) was 
     # initialized as empty on the first run through, or atleast the compiler believed it to be. So, the
     # purpose of the flag is to halt the cnt = contours[i] code until contours is correctly populated
-    cap = cv.VideoCapture(0)
+    cap = cv.VideoCapture(2)
     while(1):
         # Standard setup for OpenCV video processing
         _, frame = cap.read()
@@ -28,8 +28,8 @@ def CaptureDisc():
         #lower_green = np.array([33,16,126])
         #upper_green = np.array([67,107,199])
         #Old Camera Above, New Camera Below
-        lower_green = np.array([45,65,63])
-        upper_green = np.array([90,255,193])
+        lower_green = np.array([40,60,0])
+        upper_green = np.array([100,255,198])
         # Threshold the HSV image to get only green colors, threshold values were received from the max 
         # and min observed values from an online color picker, with a  sample image of the target object
         mask = cv.inRange(hsv, lower_green, upper_green)
@@ -80,24 +80,24 @@ def CaptureDisc():
             #olddiagonal = diagonal
             #sigma = diagonal - olddiagonal
             distance_estimate = 350.5*7.1/w
-            antiparallax_x = scaled_centroidx*distance_estimate/4.1
+            antiparallax_x = scaled_centroidx*distance_estimate/3.9
             if antiparallax_x > 1:
                 antiparallax_x = 1
             if antiparallax_x < -1:
                 antiparallax_x = -1
             #print("x:", antiparallax_x)
             #print("y:", distance_estimate)
-            scaled_y = distance_estimate*0.0909-1.37
+            scaled_y = distance_estimate*0.26-3.94
             if scaled_y > 1:
                 scaled_y = 1
             if scaled_y < -1:
                 scaled_y = -1
             #print("scaled y:", scaled_y)
-            config.camera.put([-1*scaled_centroidx, -1*scaled_y])
+            config.camera.put([antiparallax_x, -1*scaled_y])
 
-        #cv.imshow('frame',frame)
-        #cv.imshow('mask',mask)
-        #cv.imshow('blur',blur)
+        cv.imshow('frame',frame)
+        cv.imshow('mask',mask)
+        cv.imshow('blur',blur)
         #cv.imshow('blur2', blur2)
         #cv.imshow('edges', edges)
         #cv.imshow('res',res)
