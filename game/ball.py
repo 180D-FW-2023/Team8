@@ -37,12 +37,12 @@ class Ball(actor.Actor):
 
         if (left_striker.position[1] < self.position[1] < left_striker.position[1] + left_striker.y_dim) and (
                 self.position[0] >= left_striker.position[0]) and (
-                next_position[0] <= left_striker.position[0] + left_striker.x_dim):
+                next_position[0] <= left_striker.position[0] + left_striker.x_dim) and self.velocity[0] < 0:
             self.velocity[0] = -1 * self.velocity[0]
             self.velocity[1] += left_striker.velocity[1]
         if (right_striker.position[1] < self.position[1] < right_striker.position[1] + right_striker.y_dim) and (
                 self.position[0] <= right_striker.position[0] + right_striker.x_dim) and (
-                next_position[0] >= right_striker.position[0]):
+                next_position[0] >= right_striker.position[0]) and self.velocity[0] > 0:
             self.velocity[0] = -1 * self.velocity[0] + right_striker.velocity[0]
             self.velocity[1] += right_striker.velocity[1] * 0.3
         return
