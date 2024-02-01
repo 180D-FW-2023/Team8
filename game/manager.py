@@ -21,13 +21,14 @@ class Manager:
         # Initialize game state object
 
         self.game_state = game_details.GameState(self.ball_velocity / self.frame_rate)
-        self.latest_reading = 0
+        self.latest_reading = [0,0]
         self.right_striker_loc = 0
     
     def frame_update(self, frame):
         if not config.shared.empty():
             self.latest_reading = config.shared.get_nowait()
         left_striker_loc = self.latest_reading
+        print(left_striker_loc)
         self.game_state.update_state(left_striker_loc, self.right_striker_loc)
         self.game_state.refresh_display()
         time.sleep(1 / self.frame_rate)

@@ -25,8 +25,9 @@ class Striker(actor.Actor):
         self.position = np.array([x_pos, 0])
         self.velocity = np.array([0, 0])
 
-    def move(self, y_loc):
-        x_loc = -1
+    def move(self, loc):
+        x_loc = loc[1]
+        y_loc = loc[0]
         normalized_x_loc = self.x_max / 20 + (x_loc + 1) / 2 * self.x_max / 5
         normalized_y_loc = (y_loc + 1) / 2 * (self.y_max - self.y_dim)
         inertia = self.inertia * 0
