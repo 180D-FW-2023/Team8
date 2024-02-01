@@ -23,7 +23,7 @@ def main(self=None):
     launcher_instance = launcher.Launcher()
 
     manager_instance = manager.Manager()
-    manager_instance.game_loop()
+    anim = manager_instance.game_loop()
 
     # Start the threads
     camera_thread = threading.Thread(target=capture.CaptureDisc)

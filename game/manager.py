@@ -35,7 +35,7 @@ class Manager:
     
     def game_loop(self):
         ani = anim.FuncAnimation(self.game_state.fig, self.frame_update, frames=list(np.linspace(0, 2)), blit=False, interval=1)
-        return
+        return ani
     
     def open_window(self):
         plt.show()
