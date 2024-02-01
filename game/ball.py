@@ -70,5 +70,5 @@ class Ball(actor.Actor):
         self.plot.set_offsets(self.position_history[[1, 0]].T)
         self.plot.set_alpha([0.2, 0.4, 0.6, 0.8, 1])
 
-        pygame_pos = pygame.Vector2(self.position[0], self.position[1])
+        pygame_pos = pygame.Vector2(self.position[1], self.x_max - self.position[0])
         pygame.draw.circle(self.game_state.screen, "red", pygame_pos, self.game_state.x_max / 100)

@@ -12,6 +12,7 @@ class Striker(actor.Actor):
         self.inertia = inertia
         edge_offset = 1 / 20
         self.max_velocity = self.y_max / 100
+        self.is_left_striker = is_left_striker
 
         # Create plot
         if is_left_striker:
@@ -52,5 +53,14 @@ class Striker(actor.Actor):
 
     def draw(self):
         self.plot.set_data(self.verticies[[1, 0]])
-        pygame_points = (self.verticies[:, 0], self.verticies[:, 1], self.verticies[:, 2], self.verticies[:, 3])
-        pygame.draw.polygon(self.game_state.screen, "green", pygame_points)
+        
+        # Pygame draw
+        flipped_verticies = self.verticies
+        flipped_verticies[0] = self.x_max - flipped_verticies[0]
+        flipped_verticies = flipped_verticies[[1, 0]]
+        pygame_points = (flipped_verticies[:, 0], flipped_verticies[:, 1], flipped_verticies[:, 2], flipped_verticies[:, 3])
+        if not self.is_left_striker:
+            color = "green"
+        else:
+            color = 'blue'
+        pygame.draw.polygon(self.game_state.screen, color, pygame_points)

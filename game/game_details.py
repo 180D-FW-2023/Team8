@@ -26,7 +26,7 @@ class GameState:
 
         pygame.init()
         pygame.font.init()
-        self.screen = pygame.display.set_mode((self.x_max, self.y_max))
+        self.screen = pygame.display.set_mode((self.y_max, self.x_max))
         self.clock = pygame.time.Clock()
         self.running = True
         self.dt = 0
