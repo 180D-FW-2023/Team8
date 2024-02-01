@@ -7,7 +7,7 @@ class Striker(actor.Actor):
         actor.Actor.__init__(self, game_state)
         # Define constants
         super().__init__(game_state)
-        self.x_dim = self.game_state.x_max / 100
+        self.x_dim = self.game_state.x_max / 25
         self.y_dim = self.game_state.y_max / 5
         self.inertia = inertia
         edge_offset = 1 / 20

@@ -36,7 +36,7 @@ class Ball(actor.Actor):
             self.velocity[1] = -1 * self.velocity[1]
 
         if (left_striker.position[1] < self.position[1] < left_striker.position[1] + left_striker.y_dim) and (
-                self.position[0] >= left_striker.position[0] + left_striker.x_dim) and (
+                self.position[0] >= left_striker.position[0]) and (
                 next_position[0] <= left_striker.position[0] + left_striker.x_dim):
             self.velocity[0] = -1 * self.velocity[0]
             self.velocity[1] += left_striker.velocity[1]
