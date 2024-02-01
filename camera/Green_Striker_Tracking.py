@@ -16,10 +16,11 @@ flag = 0
 # I was running into an issue where the countours object (which is an array of arrays I think) was 
 # initialized as empty on the first run through, or atleast the compiler believed it to be. So, the
 # purpose of the flag is to halt the cnt = contours[i] code until contours is correctly populated
-cap = cv.VideoCapture(1)
+cap = cv.VideoCapture(2)
 while(1):
     # Standard setup for OpenCV video processing
     _, frame = cap.read()
+    frame = cv.flip(frame, 0)
     height, width, _ = frame.shape
     #print(width) <- deprecated code to tell the size of video output
     # HSV gives better thresholding results, so below is the code to convert to HSV
@@ -30,8 +31,8 @@ while(1):
     #lower_green = np.array([33,16,126])
     #upper_green = np.array([67,107,199])
     #Old Camera Above, New Camera Below
-    lower_green = np.array([51,71,63])
-    upper_green = np.array([86,255,153])
+    lower_green = np.array([45,65,63])
+    upper_green = np.array([90,255,193])
     # Threshold the HSV image to get only green colors, threshold values were received from the max 
     # and min observed values from an online color picker, with a  sample image of the target object
     mask = cv.inRange(hsv, lower_green, upper_green)
@@ -77,12 +78,20 @@ while(1):
         cv.circle(frame, (centroidx, centroidy), 5, (0,0,255), -1)
         scaled_centroidx = ((centroidx/(width//2))-1)
         #print(diagonal)
-        print("x:", scaled_centroidx)
+        #print("x:", scaled_centroidx)
         #print(x , y, w, h)
         #olddiagonal = diagonal
         #sigma = diagonal - olddiagonal
-        distance_estimate = 460.7*7.1/w
+        distance_estimate = 350.5*7.1/w
+        antiparallax_x = scaled_centroidx*distance_estimate/4.1
+        if antiparallax_x > 1:
+            antiparallax_x = 1
+        if antiparallax_x < -1:
+            antiparallax_x = -1
+        print("x:", antiparallax_x)
         print("y:", distance_estimate)
+        scaled_y = distance_estimate*0.0909-1.37
+        print("scaled y:", scaled_y)
         with open(full_path, 'w') as file:
             file.write(str(scaled_centroidx))
             file.close()
@@ -97,5 +106,5 @@ while(1):
         break
     if flag == 0:
         flag = 1
-    #time.sleep(0.5)
+    time.sleep(0.5)
 cv.destroyAllWindows()
