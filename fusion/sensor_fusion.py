@@ -9,6 +9,9 @@ def run_fusion():
             camera_reading = config.camera.get_nowait()
             if camera_reading != previous_reading:
                 config.shared.put(camera_reading)
+        if not config.imu.empty():
+            imu_reading = config.imu.get_nowait()
+            print(imu_reading)
         time.sleep(0.01)
             
                 

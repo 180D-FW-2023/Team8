@@ -14,6 +14,7 @@ from game import manager
 from game import launcher
 from config import config
 from fusion import sensor_fusion
+from imu import imu_reading
 
 def main(self=None):
     config.camera = queue.Queue()
@@ -28,6 +29,9 @@ def main(self=None):
     # Start the threads
     camera_thread = threading.Thread(target=capture.CaptureDisc)
     camera_thread.start()
+
+    imu_thread = threading.Thread(target=imu_reading.run_imu_sub)
+    imu_thread.start()
 
     fusion_thread = threading.Thread(target=sensor_fusion.run_fusion)
     fusion_thread.start()
