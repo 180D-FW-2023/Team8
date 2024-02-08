@@ -13,6 +13,7 @@ class GameState:
         self.x_max = 1 * resolution
         self.y_max = 4 / 7 * resolution
         self.v_mag = ball_velocity * self.x_max
+        self.friction_coeff = 0.01
 
         # Setup figure and axes
         self.fig, self.ax = plt.subplots()
@@ -24,6 +25,7 @@ class GameState:
         self.ax.get_xaxis().set_visible(False)
         self.ax.get_yaxis().set_visible(False)
 
+        # Create shared objects
         pygame.init()
         pygame.font.init()
         self.screen = pygame.display.set_mode((self.y_max, self.x_max))
@@ -72,7 +74,23 @@ class GameState:
         self.left_striker.draw()
         self.right_striker.draw()
 
-        score_text = self.font.render(f'Score: {self.score}', True, (0, 0, 0))
+        score_text = self.font.render(f'SCORE {self.score[0]} : {self.score[1]}', True, (0, 0, 0))
         self.screen.blit(score_text, (0, 0))
 
         pygame.display.flip()
+
+    def calculate_collision(self, striker, v):
+        # Left Striker
+        c2 = self.ball.position
+        c1 = striker.position
+        r2 = self.ball.radius
+        r1 = striker.radius
+        #inter1 = 1/2*(c1+c2) + (r1**2 - r2**2)/(2*r**2)*(c2-c1) + 1/2*np.sqrt(2*(r1**2+r2**2)/r**2 - (r1**2 - r2**2)**2/r**4 - 1)*(c2 - c1)[[1,0]]
+        #inter2 = 1/2*(c1+c2) + (r1**2 - r2**2)/(2*r**2)*(c2-c1) - 1/2*np.sqrt(2*(r1**2+r2**2)/r**2 - (r1**2 - r2**2)**2/r**4 - 1)*(c2 - c1)[[1,0]]
+
+        n = (c1-c2)/np.linalg.norm(c1-c2)
+        p = 2*np.dot(v, n)/(0.3+0.7)
+        new_v = v - p*(0.7*n - 0.3*n)
+        new_v = new_v/np.linalg.norm(new_v)*self.ball.inital_velocity
+
+        return new_v

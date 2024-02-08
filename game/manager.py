@@ -28,7 +28,6 @@ class Manager:
         if not config.shared.empty():
             self.latest_reading = config.shared.get_nowait()
         left_striker_loc = self.latest_reading
-        print(left_striker_loc)
         self.game_state.update_state(left_striker_loc, self.right_striker_loc)
         self.game_state.refresh_display()
         time.sleep(1 / self.frame_rate)

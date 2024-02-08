@@ -12,6 +12,8 @@ class Ball(actor.Actor):
         self.velocity = self.inital_velocity.copy()
         self.plot = self.game_state.ax.scatter([], [], color='red')
         self.position = np.array([self.game_state.x_max / 2, self.game_state.y_max / 2])
+        self.radius = self.x_max/50
+        self.friction_coeff = self.game_state.friction_coeff
 
     def bounce_ball(self):
         next_position = self.position + self.velocity
@@ -34,17 +36,30 @@ class Ball(actor.Actor):
 
         if hit_top_edge or hit_bottom_edge:
             self.velocity[1] = -1 * self.velocity[1]
-
+        '''
+        if (np.linalg.norm(left_striker.position - self.position) < left_striker.radius+self.radius):
+            self.velocity = self.game_state.calculate_collision(left_striker, self.velocity)
+        elif (np.linalg.norm(right_striker.position - self.position) < right_striker.radius+self.radius):
+            self.velocity = self.game_state.calculate_collision(right_striker, self.velocity)
+        '''
+        '''
         if (left_striker.position[1] < self.position[1] < left_striker.position[1] + left_striker.y_dim) and (
-                self.position[0] >= left_striker.position[0]) and (
+                self.position[0] >= left_striker.position[0] + left_striker.x_dim) and (
                 next_position[0] <= left_striker.position[0] + left_striker.x_dim) and self.velocity[0] < 0:
             self.velocity[0] = -1 * self.velocity[0]
-            self.velocity[1] += left_striker.velocity[1]
+            #self.velocity[1] += left_striker.velocity[1]
         if (right_striker.position[1] < self.position[1] < right_striker.position[1] + right_striker.y_dim) and (
                 self.position[0] <= right_striker.position[0] + right_striker.x_dim) and (
-                next_position[0] >= right_striker.position[0]) and self.velocity[0] > 0:
-            self.velocity[0] = -1 * self.velocity[0] + right_striker.velocity[0]
-            self.velocity[1] += right_striker.velocity[1] * 0.3
+                next_position[0] >= right_striker.position[0] + right_striker.x_dim) and self.velocity[0] > 0:
+            self.velocity[0] = -1 * self.velocity[0] #+ right_striker.velocity[0]
+            #self.velocity[1] += right_striker.velocity[1] * 0.3
+        '''
+        if (next_position[0] < left_striker.position[0] + left_striker.x_dim < self.position[0]) and (left_striker.position[1] + left_striker.y_dim > np.min((next_position[1], self.position[1]))) and (left_striker.position[1] < np.max((next_position[1], self.position[1]))):
+            self.velocity[0] = -1 * self.velocity[0]
+            self.velocity += 0.3*left_striker.velocity
+        elif (next_position[0] > right_striker.position[0] > self.position[0]) and (right_striker.position[1] + right_striker.y_dim > np.min((next_position[1], self.position[1]))) and (right_striker.position[1] < np.max((next_position[1], self.position[1]))):
+            self.velocity[0] = -1 * self.velocity[0]
+            self.velocity += 0.3*right_striker.velocity        
         return
 
     def move(self, y_loc=0):
@@ -53,9 +68,9 @@ class Ball(actor.Actor):
         self.position_history = np.column_stack((self.position_history, self.position))
 
         # Friction
-        new_x_velocity = self.velocity[0] - 0.01 * np.sign(self.velocity[0])
+        new_x_velocity = self.velocity[0] - self.friction_coeff * np.sign(self.velocity[0])
         self.velocity[0] = new_x_velocity * (np.sign(new_x_velocity) == np.sign(self.velocity[0]))
-        new_y_velocity = self.velocity[1] - 0.01 * np.sign(self.velocity[1])
+        new_y_velocity = self.velocity[1] - self.friction_coeff * np.sign(self.velocity[1])
         self.velocity[1] = new_y_velocity * (np.sign(new_y_velocity) == np.sign(self.velocity[1]))
 
         # Gravity
@@ -71,4 +86,4 @@ class Ball(actor.Actor):
         self.plot.set_alpha([0.2, 0.4, 0.6, 0.8, 1])
 
         pygame_pos = pygame.Vector2(self.position[1], self.x_max - self.position[0])
-        pygame.draw.circle(self.game_state.screen, "red", pygame_pos, self.game_state.x_max / 100)
+        pygame.draw.circle(self.game_state.screen, "red", pygame_pos, self.radius)
