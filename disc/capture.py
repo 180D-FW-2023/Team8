@@ -7,6 +7,8 @@ import time
 import math
 
 flag = 0
+weighted_moving_average_x = []
+weighted_moving_average_y = []
 
 def CaptureDisc():
     flag = 0
@@ -85,12 +87,14 @@ def CaptureDisc():
                 antiparallax_x = 1
             if antiparallax_x < -1:
                 antiparallax_x = -1
-            weighted_moving_average_x = []
             weighted_moving_average_x.append(antiparallax_x)
+            #print(len(weighted_moving_average_x))
+            #print(weighted_moving_average_x)
             while len(weighted_moving_average_x) > 4:
                 weighted_moving_average_x.pop(0)    
             if len(weighted_moving_average_x) == 4:
-                final_x = (weighted_moving_average_x(0)+0.75*weighted_moving_average_x(1)+0.50*weighted_moving_average_x(2)+0.25*weighted_moving_average_x(3))/2.50
+                final_x = (weighted_moving_average_x[3]+0.75*weighted_moving_average_x[2]+0.50*weighted_moving_average_x[1]+0.25*weighted_moving_average_x[0])/2.50
+                print("here")
             else:
                 final_x = antiparallax_x
             if final_x > 1:
@@ -104,12 +108,13 @@ def CaptureDisc():
                 scaled_y = 1
             if scaled_y < -1:
                 scaled_y = -1
-            weighted_moving_average_y = []
             weighted_moving_average_y.append(scaled_y)
             while len(weighted_moving_average_y) > 4:
+                #print("popping")
                 weighted_moving_average_y.pop(0)    
             if len(weighted_moving_average_y) == 4:
-                final_y = (weighted_moving_average_y(0)+0.75*weighted_moving_average_y(1)+0.50*weighted_moving_average_y(2)+0.25*weighted_moving_average_y(3))/2.50
+                final_y = (weighted_moving_average_y[3]+0.75*weighted_moving_average_y[2]+0.50*weighted_moving_average_y[1]+0.25*weighted_moving_average_y[0])/2.50
+                print("here")
             else:
                 final_y = scaled_y
             if final_y > 1:
