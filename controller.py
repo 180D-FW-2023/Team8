@@ -24,6 +24,8 @@ def main(self=None):
     launcher_instance = launcher.Launcher()
 
     manager_instance = manager.Manager()
+
+    manager_instance.startup()
     
 
     # Start the threads
@@ -36,7 +38,8 @@ def main(self=None):
     fusion_thread = threading.Thread(target=sensor_fusion.run_fusion)
     fusion_thread.start()
 
-    anim = manager_instance.game_loop()
+    #anim = manager_instance.game_loop()
+    manager_instance.game_loop()
     manager_instance.open_window()
 
     while True:

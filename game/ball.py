@@ -11,7 +11,7 @@ class Ball(actor.Actor):
         self.position_history = np.zeros((2, 5))
         self.inital_velocity = self.game_state.v_mag * np.array([-np.sqrt(2) / 2, -np.sqrt(2) / 2])
         self.velocity = self.inital_velocity.copy()
-        self.plot = self.game_state.ax.scatter([], [], color='red')
+        #self.plot = self.game_state.ax.scatter([], [], color='red')
         self.position = np.array([self.game_state.x_max / 2, self.game_state.y_max / 2])
         self.radius = self.x_max/50
         self.friction_coeff = self.game_state.friction_coeff
@@ -102,7 +102,7 @@ class Ball(actor.Actor):
             
             if self.velocity[0] > 0:
                 msg_text = self.game_state.msg_font.render('NICE HIT!', True, (int(255/random_color_1), int(255/random_color_3), int(255/random_color_2)))
-                self.game_state.screen.blit(msg_text, (self.y_max/2, 0))
+                self.game_state.screen.blit(msg_text, msg_text.get_rect(center=(self.y_max/2, self.x_max/2)))
 
         else:
             random_color_1 = 1

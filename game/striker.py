@@ -28,7 +28,7 @@ class Striker(actor.Actor):
         else:
             x_pos = self.game_state.x_max * (1 - edge_offset)
             striker_color = 'green'
-        self.plot, = self.game_state.ax.plot([], [], color=striker_color)
+        #self.plot, = self.game_state.ax.plot([], [], color=striker_color)
 
         self.position = np.array([x_pos, 0])
         self.velocity = np.array([0, 0])

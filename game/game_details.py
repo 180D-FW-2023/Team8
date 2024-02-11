@@ -7,26 +7,28 @@ import pygame
 
 
 class GameState:
-    def __init__(self, ball_velocity):
+    def __init__(self, ball_velocity, resolution, aspect_ratio, diff):
         # Set constants
         resolution = 700
+        aspect_ratio = 4/7
         self.x_max = 1 * resolution
-        self.y_max = 4 / 7 * resolution
+        self.y_max = aspect_ratio * resolution
         self.v_mag = ball_velocity * self.x_max
         self.friction_coeff = 0.01*0
         self.g = 0.001*0
         self.striker_inertia = 0.25
         self.loss = 0.1
+        self.diff = diff
 
         # Setup figure and axes
-        self.fig, self.ax = plt.subplots()
-        self.ax.set_aspect("equal")
-        self.ax.set_xlim(0, self.y_max)
-        self.ax.set_ylim(0, self.x_max)
-        self.ax.get_xaxis().set_ticks([])
-        self.ax.get_yaxis().set_ticks([])
-        self.ax.get_xaxis().set_visible(False)
-        self.ax.get_yaxis().set_visible(False)
+        #self.fig, self.ax = plt.subplots()
+        #self.ax.set_aspect("equal")
+        #self.ax.set_xlim(0, self.y_max)
+        #self.ax.set_ylim(0, self.x_max)
+        #self.ax.get_xaxis().set_ticks([])
+        #self.ax.get_yaxis().set_ticks([])
+        #self.ax.get_xaxis().set_visible(False)
+        #self.ax.get_yaxis().set_visible(False)
 
         # Create shared objects
         pygame.init()
@@ -56,7 +58,7 @@ class GameState:
         self.right_striker.move(right_striker_loc)
 
         # Update text
-        self.ax.set_title('SCORE\n' + str(self.score[0]) + ' : ' + str(self.score[1]))
+        #self.ax.set_title('SCORE\n' + str(self.score[0]) + ' : ' + str(self.score[1]))
 
     def score_point(self, is_left_point):
         self.score[is_left_point] += 1
@@ -77,7 +79,7 @@ class GameState:
         self.right_striker.draw()
 
         score_text = self.score_font.render(f'SCORE {self.score[0]} : {self.score[1]}', True, 'white')
-        self.screen.blit(score_text, (0, 0))
+        self.screen.blit(score_text, score_text.get_rect(center=(self.y_max/2, 0.02*self.x_max)))
 
         pygame.display.flip()
 
