@@ -14,11 +14,13 @@ class StrikerCPU(striker.Striker):
         
         if self.game_state.diff == 0: 
             self.sensitivity = 13.5
+            self.detection_border = 1
         else:
-            self.sensitivity = 10
+            self.sensitivity = 8
+            self.detection_border = 0.9
         
         # Calculate next y position based on inertia, ball current y position, velocity, and urgency
-        urgency = 1/(1 + np.exp(self.sensitivity*(0.9*self.x_max-ball_x_loc)/(0.9*self.x_max)))
+        urgency = 1/(1 + np.exp(self.sensitivity*(self.detection_border*self.x_max-ball_x_loc)/(self.detection_border*self.x_max)))
         #if ball_x_loc > self.x_max/2:
         next_y_position = (1-urgency) * previous_y_pos + (urgency) * (ball_y_loc) + urgency*self.instant_velocity[1]
         #else:
