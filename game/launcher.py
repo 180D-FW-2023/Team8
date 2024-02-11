@@ -23,6 +23,7 @@ class Launcher:
         self.x_res = self.resolution * self.aspect_ratio
         self.y_res = self.resolution
         self.frame_rate = frame_rate
+
         return
     
     def open_launcher(self):
@@ -61,6 +62,12 @@ class Launcher:
         option2_text = option2_font.render('Extreme >:) [2]', True, 'red')
         screen.blit(option2_text, option2_text.get_rect(center=(x_res/2, 0.7*y_res)))
 
+        path = os.path.join('game', 'assets', 'diff.png')
+        self.img = pygame.transform.scale(pygame.image.load(path), (self.x_res, self.y_res))
+        rect = self.img.get_rect()
+        rect.center = (self.x_res/2, self.y_res/2)
+        self.screen.blit(self.img, rect)
+
         pygame.display.flip()
 
         while True:
@@ -95,6 +102,12 @@ class Launcher:
 
         option1_text = option1_font.render('PLAY', True, 'white')
         screen.blit(option1_text, option1_text.get_rect(center=(x_res/2, 0.6*y_res)))
+
+        path = os.path.join('game', 'assets', 'ready.png')
+        self.img = pygame.transform.scale(pygame.image.load(path), (self.x_res, self.y_res))
+        rect = self.img.get_rect()
+        rect.center = (self.x_res/2, self.y_res/2)
+        self.screen.blit(self.img, rect)
 
         pygame.display.flip()
 

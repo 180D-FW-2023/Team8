@@ -18,7 +18,7 @@ class Striker(actor.Actor):
         self.max_steps = 10
 
         img_scaler = 1.3
-        path = os.path.join('game', 'assets', 'striker.png')
+        path = os.path.join('game', 'assets', 'striker2.png')
         self.img = pygame.transform.scale(pygame.image.load(path), (self.y_dim*img_scaler, self.x_dim*1.5))
 
         # Create plot
