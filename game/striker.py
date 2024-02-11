@@ -1,6 +1,7 @@
 import numpy as np
 from game import actor
 import pygame
+import os
 
 class Striker(actor.Actor):
     def __init__(self, game_state, is_left_striker, inertia):
@@ -16,6 +17,10 @@ class Striker(actor.Actor):
         self.radius = self.x_max/10
         self.max_steps = 10
 
+        img_scaler = 1.3
+        path = os.path.join('game', 'assets', 'striker.png')
+        self.img = pygame.transform.scale(pygame.image.load(path), (self.y_dim*img_scaler, self.x_dim*1.5))
+
         # Create plot
         if is_left_striker:
             x_pos = self.game_state.x_max * edge_offset
@@ -28,6 +33,7 @@ class Striker(actor.Actor):
         self.position = np.array([x_pos, 0])
         self.velocity = np.array([0, 0])
         self.instant_velocity = self.velocity
+        self.avg_velocity = self.velocity
         self.velocity_history = np.zeros((2, 15))
         self.displacement = np.array([0, 0])
         self.displacement_steps = 0
@@ -48,15 +54,15 @@ class Striker(actor.Actor):
         
         self.instant_velocity = np.array([next_x_position - previous_x_pos, next_y_position - previous_y_pos])
         self.velocity = self.instant_velocity
-        '''
+        
         # Update average velocity
         self.displacement_steps += 1
         if self.displacement_steps == self.max_steps:
             self.displacement_steps = 0
             self.displacement = np.array([next_x_position, next_y_position]) - self.previous_position
             self.previous_position = np.array([next_x_position, next_y_position])
-            self.velocity = self.displacement/self.max_steps
-        '''
+            self.avg_velocity = self.displacement/self.max_steps
+        
 
         if np.abs(self.velocity[1]) < self.max_velocity:
             self.position[1] = next_y_position
@@ -89,11 +95,12 @@ class Striker(actor.Actor):
             ball.position[0] = self.position[0] + self.x_dim
             if ball.velocity[0] < 0:
                 ball.velocity[0] = -1 * ball.velocity[0]
-            ball.velocity += 0.3*self.velocity
+                ball.velocity = ball.velocity * (1 - self.game_state.loss)
+            ball.velocity += 0.3*self.avg_velocity
 
         
     def draw(self):
-        self.plot.set_data(self.verticies[[1, 0]])
+        #self.plot.set_data(self.verticies[[1, 0]])
         
         # Pygame draw
         pygame_pos = pygame.Vector2(self.position[1], self.x_max - self.position[0])
@@ -106,5 +113,10 @@ class Striker(actor.Actor):
             color = "green"
         else:
             color = 'blue'
-        pygame.draw.polygon(self.game_state.screen, color, pygame_points)
+        #pygame.draw.polygon(self.game_state.screen, color, pygame_points)
+        #rect = pygame.Rect(self.position[1], self.x_max - self.position[0] - self.x_dim, self.y_dim, self.x_dim)
+        rect = self.img.get_rect()
+        center = (self.position[1] + self.y_dim/2, self.x_max - self.position[0] - self.x_dim/2)
+        rect.center = center
+        self.game_state.screen.blit(self.img, rect)
         #pygame.draw.circle(self.game_state.screen, color, pygame_pos, self.radius)

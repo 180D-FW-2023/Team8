@@ -24,7 +24,7 @@ def main(self=None):
     launcher_instance = launcher.Launcher()
 
     manager_instance = manager.Manager()
-    anim = manager_instance.game_loop()
+    
 
     # Start the threads
     camera_thread = threading.Thread(target=capture.CaptureDisc)
@@ -36,6 +36,7 @@ def main(self=None):
     fusion_thread = threading.Thread(target=sensor_fusion.run_fusion)
     fusion_thread.start()
 
+    anim = manager_instance.game_loop()
     manager_instance.open_window()
 
     while True:

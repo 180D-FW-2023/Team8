@@ -17,7 +17,7 @@ class Manager:
     def __init__(self):
         self.initial = 0.5
         self.frame_rate = 120 * 2  # frames per second
-        self.ball_velocity = 3  # proportion of board x max per second
+        self.ball_velocity = 1  # proportion of board x max per second
         # Initialize game state object
 
         self.game_state = game_details.GameState(self.ball_velocity / self.frame_rate)
@@ -34,8 +34,10 @@ class Manager:
         return self.game_state.ax
     
     def game_loop(self):
-        ani = anim.FuncAnimation(self.game_state.fig, self.frame_update, frames=list(np.linspace(0, 2)), blit=False, interval=1)
-        return ani
+        while 1:
+            self.frame_update(1)
+        #ani = anim.FuncAnimation(self.game_state.fig, self.frame_update, frames=list(np.linspace(0, 2)), blit=False, interval=1)
+        return 1
     
     def open_window(self):
         plt.show()
