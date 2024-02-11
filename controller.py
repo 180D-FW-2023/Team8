@@ -32,8 +32,8 @@ def main(self=None):
     camera_thread = threading.Thread(target=capture.CaptureDisc)
     camera_thread.start()
 
-    imu_thread = threading.Thread(target=imu_reading.run_imu_sub)
-    imu_thread.start()
+    #imu_thread = threading.Thread(target=imu_reading.run_imu_sub)
+    #imu_thread.start()
 
     fusion_thread = threading.Thread(target=sensor_fusion.run_fusion)
     fusion_thread.start()
