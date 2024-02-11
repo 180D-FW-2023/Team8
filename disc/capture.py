@@ -13,7 +13,7 @@ def CaptureDisc():
     # I was running into an issue where the countours object (which is an array of arrays I think) was 
     # initialized as empty on the first run through, or atleast the compiler believed it to be. So, the
     # purpose of the flag is to halt the cnt = contours[i] code until contours is correctly populated
-    cap = cv.VideoCapture(2)
+    cap = cv.VideoCapture(1)
     while(1):
         # Standard setup for OpenCV video processing
         _, frame = cap.read()
@@ -85,6 +85,18 @@ def CaptureDisc():
                 antiparallax_x = 1
             if antiparallax_x < -1:
                 antiparallax_x = -1
+            weighted_moving_average_x = []
+            weighted_moving_average_x.append(antiparallax_x)
+            while len(weighted_moving_average_x) > 4:
+                weighted_moving_average_x.pop(0)    
+            if len(weighted_moving_average_x) == 4:
+                final_x = (weighted_moving_average_x(0)+0.75*weighted_moving_average_x(1)+0.50*weighted_moving_average_x(2)+0.25*weighted_moving_average_x(3))/2.50
+            else:
+                final_x = antiparallax_x
+            if final_x > 1:
+                final_x = 1
+            if final_x < -1:
+                final_x = -1
             #print("x:", antiparallax_x)
             #print("y:", distance_estimate)
             scaled_y = distance_estimate*0.26-3.94
@@ -92,8 +104,22 @@ def CaptureDisc():
                 scaled_y = 1
             if scaled_y < -1:
                 scaled_y = -1
+            weighted_moving_average_y = []
+            weighted_moving_average_y.append(scaled_y)
+            while len(weighted_moving_average_y) > 4:
+                weighted_moving_average_y.pop(0)    
+            if len(weighted_moving_average_y) == 4:
+                final_y = (weighted_moving_average_y(0)+0.75*weighted_moving_average_y(1)+0.50*weighted_moving_average_y(2)+0.25*weighted_moving_average_y(3))/2.50
+            else:
+                final_y = scaled_y
+            if final_y > 1:
+                final_y = 1
+            if final_y < -1:
+                final_y = -1
             #print("scaled y:", scaled_y)
-            config.camera.put([antiparallax_x, -1*scaled_y])
+            print("final x:", final_x)
+            print("final y", final_y)
+            config.camera.put([final_x, -1*final_y])
 
         cv.imshow('frame',frame)
         cv.imshow('mask',mask)
