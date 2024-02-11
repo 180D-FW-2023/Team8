@@ -7,7 +7,7 @@ import pygame
 
 
 class GameState:
-    def __init__(self, ball_velocity, resolution, aspect_ratio, diff):
+    def __init__(self, ball_velocity, resolution, aspect_ratio, diff, screen):
         # Set constants
         resolution = 700
         aspect_ratio = 4/7
@@ -20,20 +20,8 @@ class GameState:
         self.loss = 0.1
         self.diff = diff
 
-        # Setup figure and axes
-        #self.fig, self.ax = plt.subplots()
-        #self.ax.set_aspect("equal")
-        #self.ax.set_xlim(0, self.y_max)
-        #self.ax.set_ylim(0, self.x_max)
-        #self.ax.get_xaxis().set_ticks([])
-        #self.ax.get_yaxis().set_ticks([])
-        #self.ax.get_xaxis().set_visible(False)
-        #self.ax.get_yaxis().set_visible(False)
-
         # Create shared objects
-        pygame.init()
-        pygame.font.init()
-        self.screen = pygame.display.set_mode((self.y_max, self.x_max))
+        self.screen = screen
         self.clock = pygame.time.Clock()
         self.running = True
         self.dt = 0
@@ -101,11 +89,6 @@ class GameState:
     
     def draw_scene(self):
         self.screen.fill("black")
-        #center_line = np.array([[0, self.y_max], [self.x_max / 2, self.x_max / 2]])
-        #center_circle = patches.Circle((self.y_max / 2, self.x_max / 2), radius=self.x_max / 10, edgecolor='gray',
-                                      # fill=False, linewidth=1, zorder=1)
-        #self.ax.add_patch(center_circle)
-        #self.ax.plot(center_line[0, :], center_line[1, :], color='gray', linewidth=1, zorder=1)
         line_width = np.max((1, int(self.y_max/300)))
         pygame.draw.line(self.screen, 'white', (0, self.x_max/2), (self.y_max, self.x_max/2), width=line_width)
         pygame.draw.circle(self.screen, 'white', (self.y_max/2, self.x_max/2), self.y_max/4, width=line_width)

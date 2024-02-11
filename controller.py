@@ -21,13 +21,9 @@ def main(self=None):
     config.imu = queue.Queue()
     config.shared = queue.Queue()
 
-    launcher_instance = launcher.Launcher()
-
     manager_instance = manager.Manager()
-
     manager_instance.startup()
     
-
     # Start the threads
     camera_thread = threading.Thread(target=capture.CaptureDisc)
     camera_thread.start()
