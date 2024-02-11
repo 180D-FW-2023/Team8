@@ -18,7 +18,11 @@ class Striker(actor.Actor):
         self.max_steps = 10
 
         img_scaler = 1.3
-        path = os.path.join('game', 'assets', 'striker2.png')
+        if self.game_state.diff == 1 and not self.is_left_striker:
+            image_name = 'extreme_cpu_striker.png'
+        else:
+            image_name = 'striker2.png'
+        path = os.path.join('game', 'assets', image_name)
         self.img = pygame.transform.scale(pygame.image.load(path), (self.y_dim*img_scaler, self.x_dim*1.5))
 
         # Create plot
