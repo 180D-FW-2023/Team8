@@ -1,4 +1,5 @@
-# Team8
+# Virtual Air Hockey
+Note: graphics include flashing colors.
 ## Overview
 
 ## Instructions
