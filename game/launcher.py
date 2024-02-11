@@ -69,10 +69,10 @@ class Launcher:
                     keys = pygame.key.get_pressed()
                     if keys[pygame.K_1]:
                         self.diff = 0
-                        return
+                        return self.diff
                     elif keys[pygame.K_2]:
                         self.diff = 1
-                        return
+                        return self.diff
             time.sleep(1 / self.frame_rate)
 
     def play(self):  

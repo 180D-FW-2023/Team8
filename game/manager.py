@@ -54,7 +54,7 @@ class Manager:
         self.launcher = launcher.Launcher(self.frame_rate, self.resolution, self.aspect_ratio, self.screen)
 
         self.launcher.open_launcher()
-        self.launcher.choose_difficulty()
+        self.diff = self.launcher.choose_difficulty()
         self.launcher.play()
         self.launcher.countdown()
         

@@ -14,7 +14,7 @@ class StrikerCPU(striker.Striker):
         
         if self.game_state.diff == 0: 
             self.sensitivity = 13.5
-            self.detection_border = 1
+            self.detection_border = 0.9
         else:
             self.sensitivity = 8
             self.detection_border = 0.9
