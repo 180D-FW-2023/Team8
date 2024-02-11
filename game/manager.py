@@ -20,7 +20,7 @@ class Manager:
         self.initial = 0.5
         self.frame_rate = 120 * 2  # frames per second
         self.ball_velocity = 1  # proportion of board x max per second
-        self.resolution = 700
+        self.resolution = 850
         self.aspect_ratio = 4/7
         self.diff = -1
 

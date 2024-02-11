@@ -9,8 +9,6 @@ import pygame
 class GameState:
     def __init__(self, ball_velocity, resolution, aspect_ratio, diff, screen):
         # Set constants
-        resolution = 700
-        aspect_ratio = 4/7
         self.x_max = 1 * resolution
         self.y_max = aspect_ratio * resolution
         self.v_mag = ball_velocity * self.x_max
