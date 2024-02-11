@@ -28,7 +28,7 @@ class StrikerCPU(striker.Striker):
 
         # Calculate next x position based on inertia, ball current distance to the right edge, and velocity
         normalized_distance_to_boundary = np.min(((x_boundary - ball_x_loc) / x_boundary, 1))
-        next_x_position = (inertia) * previous_x_pos + (1 - inertia) * (x_boundary + (self.game_state.x_max - x_boundary - self.x_dim) * normalized_distance_to_boundary) + (inertia) * self.instant_velocity[0] * 0.1 * (1 / (0.5 + normalized_distance_to_boundary))
+        next_x_position = (1-urgency) * previous_x_pos + ( urgency) * (x_boundary + (self.game_state.x_max - x_boundary - self.x_dim) * normalized_distance_to_boundary) + (urgency) * self.instant_velocity[0] * 0.1 * (1 / (0.5 + normalized_distance_to_boundary))
 
         is_in_bounds = (next_y_position + self.y_dim < self.game_state.y_max) and (next_y_position > 0)
 
