@@ -15,7 +15,7 @@ def CaptureDisc():
     # I was running into an issue where the countours object (which is an array of arrays I think) was 
     # initialized as empty on the first run through, or atleast the compiler believed it to be. So, the
     # purpose of the flag is to halt the cnt = contours[i] code until contours is correctly populated
-    cap = cv.VideoCapture(1)
+    cap = cv.VideoCapture(2)
     while(1):
         # Standard setup for OpenCV video processing
         _, frame = cap.read()
@@ -24,18 +24,20 @@ def CaptureDisc():
         #print(width) <- deprecated code to tell the size of video output
         # HSV gives better thresholding results, so below is the code to convert to HSV
         hsv = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
+        #grayscale = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
         #lower_green = np.array([40,51,51])
         #upper_green = np.array([85,230,153])
         #Values above are for my laptop camera, values below are for USB camera (for project)
         #lower_green = np.array([33,16,126])
         #upper_green = np.array([67,107,199])
         #Old Camera Above, New Camera Below
-        lower_green = np.array([40,60,0])
+        lower_green = np.array([40,60,20])
         upper_green = np.array([100,255,198])
         # Threshold the HSV image to get only green colors, threshold values were received from the max 
         # and min observed values from an online color picker, with a  sample image of the target object
         mask = cv.inRange(hsv, lower_green, upper_green)
-        blur = cv.medianBlur(mask,19)
+        #ret1, mask = cv.threshold(grayscale,0,255,cv.THRESH_BINARY+cv.THRESH_OTSU)
+        blur = cv.medianBlur(mask,23)
         # median blur to remove salt and pepper noise
         blur2 = cv.blur(blur,(20,20))
         # standard blur appears to be sufficient for our case. 20,20 was chosen experimentally
@@ -91,16 +93,18 @@ def CaptureDisc():
             #print(len(weighted_moving_average_x))
             #print(weighted_moving_average_x)
             while len(weighted_moving_average_x) > 4:
-                weighted_moving_average_x.pop(0)    
+                weighted_moving_average_x.pop(0)
+                #print("popping")    
             if len(weighted_moving_average_x) == 4:
                 final_x = (weighted_moving_average_x[3]+0.75*weighted_moving_average_x[2]+0.50*weighted_moving_average_x[1]+0.25*weighted_moving_average_x[0])/2.50
-                print("here")
+                #print("using avg")
             else:
                 final_x = antiparallax_x
             if final_x > 1:
                 final_x = 1
             if final_x < -1:
                 final_x = -1
+            #print("x:", final_x)
             #print("x:", antiparallax_x)
             #print("y:", distance_estimate)
             scaled_y = distance_estimate*0.26-3.94
@@ -114,7 +118,7 @@ def CaptureDisc():
                 weighted_moving_average_y.pop(0)    
             if len(weighted_moving_average_y) == 4:
                 final_y = (weighted_moving_average_y[3]+0.75*weighted_moving_average_y[2]+0.50*weighted_moving_average_y[1]+0.25*weighted_moving_average_y[0])/2.50
-                print("here")
+                #print("here")
             else:
                 final_y = scaled_y
             if final_y > 1:
@@ -122,13 +126,13 @@ def CaptureDisc():
             if final_y < -1:
                 final_y = -1
             #print("scaled y:", scaled_y)
-            print("final x:", final_x)
-            print("final y", final_y)
+            #print("final x:", final_x)
+            #print("final y", final_y)
             config.camera.put([final_x, -1*final_y])
 
-        cv.imshow('frame',frame)
-        cv.imshow('mask',mask)
-        cv.imshow('blur',blur)
+        #cv.imshow('frame',frame)
+        #cv.imshow('mask',mask)
+        #cv.imshow('blur',blur)
         #cv.imshow('blur2', blur2)
         #cv.imshow('edges', edges)
         #cv.imshow('res',res)
