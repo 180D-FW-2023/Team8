@@ -5,17 +5,23 @@ from config import config
 import matplotlib.pyplot as plt
 import time
 import math
+import platform
 
 flag = 0
 weighted_moving_average_x = []
 weighted_moving_average_y = []
 
 def CaptureDisc():
+    if "macOS" in platform.platform():
+        flip = -1
+    else:
+        flip = 1
+
     flag = 0
     # I was running into an issue where the countours object (which is an array of arrays I think) was 
     # initialized as empty on the first run through, or atleast the compiler believed it to be. So, the
     # purpose of the flag is to halt the cnt = contours[i] code until contours is correctly populated
-    cap = cv.VideoCapture(2)
+    cap = cv.VideoCapture(0)
     while(1):
         # Standard setup for OpenCV video processing
         _, frame = cap.read()
@@ -128,7 +134,7 @@ def CaptureDisc():
             #print("scaled y:", scaled_y)
             #print("final x:", final_x)
             #print("final y", final_y)
-            config.camera.put([final_x, -1*final_y])
+            config.camera.put([final_x*flip, -1*final_y])
 
         #cv.imshow('frame',frame)
         #cv.imshow('mask',mask)
