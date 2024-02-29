@@ -16,10 +16,11 @@ flag = 0
 # I was running into an issue where the countours object (which is an array of arrays I think) was 
 # initialized as empty on the first run through, or atleast the compiler believed it to be. So, the
 # purpose of the flag is to halt the cnt = contours[i] code until contours is correctly populated
-MIN_MATCH_COUNT = 6
-lower_green = np.array([40,60,20])
+counter = 0
+MIN_MATCH_COUNT = 7
+lower_green = np.array([40,60,25])
 upper_green = np.array([100,255,198])
-cap = cv.VideoCapture(2)
+cap = cv.VideoCapture(1)
 while(1):
     # Standard setup for OpenCV video processing
     _, frame = cap.read()
@@ -30,12 +31,16 @@ while(1):
     # and min observed values from an online color picker, with a  sample image of the target object
     mask = cv.inRange(frame_hsv, lower_green, upper_green)
     #ret1, mask = cv.threshold(grayscale,0,255,cv.THRESH_BINARY+cv.THRESH_OTSU)
-    blur = cv.medianBlur(mask,23)
+    blur = cv.medianBlur(mask,29)
     # median blur to remove salt and pepper noise
     blur2 = cv.blur(blur,(20,20))
     # standard blur appears to be sufficient for our case. 20,20 was chosen experimentally
     edges = cv.Canny(blur, 100, 200)
     contours, _ = cv.findContours(blur2, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
+    if len(contours) > 0:
+        cnt = max(contours, key = cv.contourArea)
+        x,y,w,h = cv.boundingRect(cnt)
+        cv.rectangle(frame,(x,y),(x+w,y+h),(0,0,255),2)
     Extracted_Striker_Frame = cv.imread('ThresholdStriker.png')
     Extracted_Striker_Frame_Gray = cv.cvtColor(Extracted_Striker_Frame, cv.COLOR_BGR2GRAY)
     # Initiate SIFT detector
@@ -62,15 +67,42 @@ while(1):
         #pts = np.float32([ [0,0],[0,h-1],[w-1,h-1],[w-1,0] ]).reshape(-1,1,2)
         #dst = cv.perspectiveTransform(pts,M)
         #blur2 = cv.polylines(blur2,[np.int32(dst)],True,255,3, cv.LINE_AA)
-        print ("Good Threshold Found, Exiting")
-        exit()
+        if flag == 1:
+            print ("Good Threshold Found, Exiting")
+            exit()
     else:
         print( "Not enough matches are found - {}/{}".format(len(good), MIN_MATCH_COUNT) )
-        matchesMask = None
-        
+        #matchesMask = None
+    if counter == 5:
+        #masked_frame = cv.bitwise_and(frame_hsv, frame_hsv, mask= blur2)
+        avg_hsv = cv.mean(frame_hsv, blur2)
+        print(avg_hsv)
+        #cv.imshow("masked frame", masked_frame)
+        if (avg_hsv[0]-lower_green[0]) < (upper_green[0] - avg_hsv[0]):
+            lower_green[0] = lower_green[0] - 5
+            upper_green[0] = upper_green[0] - 5
+        if (avg_hsv[0]-lower_green[0]) > (upper_green[0] - avg_hsv[0]):
+            lower_green[0] = lower_green[0] + 5
+            upper_green[0] = upper_green[0] + 5
+        if (avg_hsv[1]-lower_green[1]) < (upper_green[1] - avg_hsv[1]):
+            lower_green[1] = lower_green[1] - 5
+            upper_green[1] = upper_green[1] - 5
+        if (avg_hsv[1]-lower_green[1]) > (upper_green[1] - avg_hsv[1]):
+            lower_green[1] = lower_green[1] + 5
+            upper_green[1] = upper_green[1] + 5
+        if (avg_hsv[2]-lower_green[2]) < (upper_green[2] - avg_hsv[2]):
+            lower_green[2] = lower_green[2] - 5
+            upper_green[2] = upper_green[2] - 5
+        if (avg_hsv[2]-lower_green[2]) > (upper_green[2] - avg_hsv[2]):
+            lower_green[2] = lower_green[2] + 5
+            upper_green[2] = upper_green[2] + 5
+        print("changing Thresholding: New Lower Green", lower_green , "New Upper Green", upper_green)
+        counter == 0
+    else:
+        counter = counter+1
     draw_params = dict(matchColor = (0,255,0), # draw matches in green color
                    singlePointColor = None,
-                   matchesMask = matchesMask, # draw only inliers
+                   #matchesMask = matchesMask, # draw only inliers
                    flags = 2)
     img3 = cv.drawMatches(blur2,kp1,Extracted_Striker_Frame_Gray,kp2,good,None,**draw_params)
     img3_small = cv.resize(img3, (0, 0), fx = 0.5, fy = 0.5)
@@ -200,5 +232,5 @@ while(1):
         break
     if flag == 0:
         flag = 1
-    #time.sleep(0.5)
+        time.sleep(0.5)
 cv.destroyAllWindows()
