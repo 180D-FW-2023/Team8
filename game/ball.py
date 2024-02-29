@@ -17,6 +17,7 @@ class Ball(actor.Actor):
         self.friction_coeff = self.game_state.friction_coeff
         self.g = self.game_state.g
         self.loss =  self.game_state.loss
+        self.sfx = self.game_state.sfx
 
     def bounce_ball(self):
         next_position = self.position + self.velocity
@@ -95,7 +96,7 @@ class Ball(actor.Actor):
         alpha = [0.2, 0.4, 0.6, 0.8, 1]
         alpha_i = 0
 
-        if np.linalg.norm(self.velocity) > self.x_max/200:
+        if np.linalg.norm(self.velocity) > self.x_max/200 and self.sfx == 1:
             random_color_1 = np.random.randint(1,5)
             random_color_2 = np.random.randint(1,5)
             random_color_3 = np.random.randint(1,5)

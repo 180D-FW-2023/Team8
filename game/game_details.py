@@ -7,7 +7,7 @@ import pygame
 
 
 class GameState:
-    def __init__(self, ball_velocity, resolution, aspect_ratio, diff, screen):
+    def __init__(self, ball_velocity, resolution, aspect_ratio, diff, sfx, screen):
         # Set constants
         self.x_max = 1 * resolution
         self.y_max = aspect_ratio * resolution
@@ -17,6 +17,7 @@ class GameState:
         self.striker_inertia = 0.25
         self.loss = 0.1
         self.diff = diff
+        self.sfx = sfx
 
         # Create shared objects
         self.screen = screen

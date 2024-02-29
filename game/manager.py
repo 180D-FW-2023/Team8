@@ -23,6 +23,7 @@ class Manager:
         self.resolution = 850
         self.aspect_ratio = 4/7
         self.diff = -1
+        self.sfx = False
         return
 
     def frame_update(self):
@@ -36,7 +37,7 @@ class Manager:
     
     def game_loop(self):
         # Initialize game state object
-        self.game_state = game_details.GameState(self.ball_velocity / self.frame_rate, self.resolution, self.aspect_ratio, self.diff, self.screen)
+        self.game_state = game_details.GameState(self.ball_velocity / self.frame_rate, self.resolution, self.aspect_ratio, self.diff, self.sfx, self.screen)
         self.latest_reading = [0,0]
         self.right_striker_loc = 0
 
@@ -44,10 +45,10 @@ class Manager:
             self.frame_update()
             if self.game_state.score[0] == 11:
                 self.launcher.end_screen(False)
-                exit()
+                break
             elif self.game_state.score[1] == 11:
                 self.launcher.end_screen(True)
-                exit()
+                break
         exit()
     
     def startup(self):
@@ -61,7 +62,9 @@ class Manager:
         self.launcher = launcher.Launcher(self.frame_rate, self.resolution, self.aspect_ratio, self.screen)
         
         self.launcher.open_launcher()
-        self.diff = self.launcher.diff
+
+        self.sfx = self.launcher.settings_data[1]
+        self.diff = self.launcher.settings_data[2]
         return
         
     def open_window(self):
