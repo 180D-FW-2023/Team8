@@ -23,6 +23,7 @@ class Manager:
         self.resolution = 850
         self.aspect_ratio = 4/7
         self.diff = -1
+        return
 
     def frame_update(self):
         if not config.shared.empty():
@@ -41,7 +42,13 @@ class Manager:
 
         while 1:
             self.frame_update()
-        return
+            if self.game_state.score[0] == 11:
+                self.launcher.end_screen(False)
+                exit()
+            elif self.game_state.score[1] == 11:
+                self.launcher.end_screen(True)
+                exit()
+        exit()
     
     def startup(self):
         x_res = self.resolution * self.aspect_ratio
@@ -54,10 +61,8 @@ class Manager:
         self.launcher = launcher.Launcher(self.frame_rate, self.resolution, self.aspect_ratio, self.screen)
         
         self.launcher.open_launcher()
-        self.launcher.begin_calibration()
-        self.diff = self.launcher.choose_difficulty()
-        self.launcher.play()
-        self.launcher.countdown()
+        self.diff = self.launcher.diff
+        return
         
     def open_window(self):
         plt.show()

@@ -24,9 +24,18 @@ class Launcher:
         self.y_res = self.resolution
         self.frame_rate = frame_rate
         self.latest_reading = (0,0)
+        self.settings_data = [0,0,0] 
+        self.diff = 0
 
         return
-    
+    def display_to_screen(self, path):
+        path = os.path.join('game', 'assets', path)
+        self.img = pygame.transform.scale(pygame.image.load(path), (self.x_res, self.y_res))
+        rect = self.img.get_rect()
+        rect.center = (self.x_res/2, self.y_res/2)
+        self.screen.blit(self.img, rect)
+        pygame.display.flip()
+
     def open_launcher(self):
         x_res = self.resolution * self.aspect_ratio
         y_res = self.resolution
@@ -39,7 +48,66 @@ class Launcher:
         self.instr_font = pygame.font.Font(None, 36)
         self.option1_font = pygame.font.Font(None, 36)
         self.option2_font = pygame.font.Font(None, 36)
-    
+
+        path = os.path.join('game', 'assets', 'title.png')
+        self.img = pygame.transform.scale(pygame.image.load(path), (self.x_res, self.y_res))
+        rect = self.img.get_rect()
+        rect.center = (self.x_res/2, self.y_res/2)
+        self.screen.blit(self.img, rect)
+        pygame.display.flip()
+
+        while True:
+            self.display_to_screen('title.png')
+            for event in pygame.event.get():
+                if event.type == pygame.KEYDOWN:
+                    keys = pygame.key.get_pressed()
+                    if keys[pygame.K_SPACE]:
+                        self.countdown()
+                        return
+                    elif keys[pygame.K_1]:
+                        self.calibrate()
+                    elif keys[pygame.K_2]:
+                        self.settings()
+            time.sleep(1 / self.frame_rate)
+
+    def settings(self):
+        path = os.path.join('game', 'assets', 'settings', 'settings_' + ''.join(map(str, self.settings_data)) + '.png')
+        self.img = pygame.transform.scale(pygame.image.load(path), (self.x_res, self.y_res))
+        rect = self.img.get_rect()
+        rect.center = (self.x_res/2, self.y_res/2)
+        self.screen.blit(self.img, rect)
+        pygame.display.flip()
+
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.KEYDOWN:
+                    keys = pygame.key.get_pressed()
+                    if keys[pygame.K_1]:
+                        self.settings_data[0] = 1 - self.settings_data[0]
+                        self.display_to_screen(os.path.join('settings', 'settings_' + ''.join(map(str, self.settings_data))) + '.png')
+                    elif keys[pygame.K_2]:
+                        self.settings_data[1] = 1 - self.settings_data[1]
+                        self.display_to_screen(os.path.join('settings', 'settings_' + ''.join(map(str, self.settings_data))) + '.png')
+                    elif keys[pygame.K_3]:
+                        self.settings_data[2] = 1 - self.settings_data[2]
+                        self.diff = self.settings_data[2]
+                        self.display_to_screen(os.path.join('settings', 'settings_' + ''.join(map(str, self.settings_data))) + '.png')
+                    elif keys[pygame.K_ESCAPE]:
+                        return
+            time.sleep(1 / self.frame_rate)
+
+    def end_screen(self, win = True):
+        end_screens = ['win.png', 'lose.png']
+        self.display_to_screen(end_screens[int(win)])
+
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.KEYDOWN:
+                    keys = pygame.key.get_pressed()
+                    if keys[pygame.K_SPACE] or keys[pygame.K_RETURN] or keys[pygame.K_ESCAPE]:
+                        return
+            time.sleep(1 / self.frame_rate)
+        return
     def choose_difficulty(self):
         title_font = self.title_font
         instr_font = self.instr_font
