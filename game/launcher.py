@@ -23,6 +23,7 @@ class Launcher:
         self.x_res = self.resolution * self.aspect_ratio
         self.y_res = self.resolution
         self.frame_rate = frame_rate
+        self.latest_reading = (0,0)
 
         return
     
@@ -136,3 +137,65 @@ class Launcher:
             pygame.display.flip()
             time.sleep(1)
         return
+    
+    def begin_calibration(self):
+        path = os.path.join('game', 'assets', 'ready.png')
+        self.img = pygame.transform.scale(pygame.image.load(path), (self.x_res, self.y_res))
+        rect = self.img.get_rect()
+        rect.center = (self.x_res/2, self.y_res/2)
+        self.screen.blit(self.img, rect)
+
+        pygame.display.flip()
+
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.KEYDOWN:
+                    keys = pygame.key.get_pressed()
+                    if keys[pygame.K_SPACE]:
+                        self.calibrate()
+                        return                   
+            time.sleep(1 / self.frame_rate)
+    
+    def calibrate(self):
+
+        cal_rect = pygame.Rect(0, 0, self.x_res*0.9, self.y_res*0.2)
+        cal_rect.center = (self.x_res/2, 0.6*self.y_res)
+
+        instr_text = self.instr_font.render('Please center the striker at the red dot.', True, 'white')
+
+        while True:
+            self.screen.fill('black')
+            self.screen.blit(instr_text, instr_text.get_rect(center=(self.x_res/2, 0.3*self.y_res)))
+            pygame.draw.rect(self.screen, 'white', cal_rect, width=int(self.x_res/150))
+
+            if not config.shared.empty():
+                self.latest_reading = config.shared.get_nowait()
+            loc_x = 0.9*self.x_res*1/2*(1+self.latest_reading[0])
+            loc_y = 0.7*self.y_res - 0.1*self.y_res*(1+self.latest_reading[1])
+            pygame.draw.circle(self.screen, 'white', (loc_x, loc_y), self.x_res/35)
+            pygame.draw.circle(self.screen, 'red', (self.x_res/2, 0.6*self.y_res), self.x_res/100)
+            if np.linalg.norm((loc_x-self.x_res/2, loc_y-0.6*self.y_res)) < self.x_res/100:
+                self.screen.fill('black')
+                pygame.draw.rect(self.screen, 'white', cal_rect, width=int(self.x_res/150))
+                pygame.draw.circle(self.screen, 'white', (loc_x, loc_y), self.x_res/35)
+                pygame.draw.circle(self.screen, 'red', (self.x_res/2, 0.6*self.y_res), self.x_res/100)
+
+                instr_text = self.instr_font.render('Calibrating...', True, 'white')
+                self.screen.blit(instr_text, instr_text.get_rect(center=(self.x_res/2, 0.3*self.y_res)))
+                pygame.display.flip()
+                time.sleep(3)
+                return
+            pygame.display.flip()
+            time.sleep(1 / self.frame_rate)
+
+
+
+
+        
+        
+
+        
+
+
+
+        

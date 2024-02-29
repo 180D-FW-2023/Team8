@@ -21,7 +21,7 @@ def CaptureDisc():
     # I was running into an issue where the countours object (which is an array of arrays I think) was 
     # initialized as empty on the first run through, or atleast the compiler believed it to be. So, the
     # purpose of the flag is to halt the cnt = contours[i] code until contours is correctly populated
-    cap = cv.VideoCapture(2)
+    cap = cv.VideoCapture(0)
     while(1):
         # Standard setup for OpenCV video processing
         _, frame = cap.read()
