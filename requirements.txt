@@ -1,0 +1,6 @@
+ably==2.0.4
+matplotlib==3.4.3
+numpy==1.24.3
+opencv_python==4.2.0.34
+opencv_python==4.5.3.56
+pygame==2.5.2
