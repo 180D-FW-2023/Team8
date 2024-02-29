@@ -9,6 +9,7 @@ import numpy as np
 import matplotlib.animation as anim
 import time
 import pygame
+import sys
 from disc import capture
 from game import game_details
 from config import config
@@ -37,6 +38,7 @@ class Manager:
     
     def game_loop(self):
         # Initialize game state object
+        config.state_signals['GAME_SIG'] = 1
         self.game_state = game_details.GameState(self.ball_velocity / self.frame_rate, self.resolution, self.aspect_ratio, self.diff, self.sfx, self.screen)
         self.latest_reading = [0,0]
         self.right_striker_loc = 0
@@ -49,6 +51,10 @@ class Manager:
             elif self.game_state.score[1] == 11:
                 self.launcher.end_screen(True)
                 break
+        config.state_signals['GAME_SIG'] = 0
+        pygame.display.quit()
+        pygame.quit()
+        sys.exit()
         exit()
     
     def startup(self):

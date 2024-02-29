@@ -225,6 +225,7 @@ class Launcher:
             time.sleep(1 / self.frame_rate)
     
     def calibrate(self):
+        config.state_signals['CAL_SIG'] = 1
 
         cal_rect = pygame.Rect(0, 0, self.x_res*0.9, self.y_res*0.2)
         cal_rect.center = (self.x_res/2, 0.6*self.y_res)
@@ -251,7 +252,10 @@ class Launcher:
                 instr_text = self.instr_font.render('Calibrating...', True, 'white')
                 self.screen.blit(instr_text, instr_text.get_rect(center=(self.x_res/2, 0.3*self.y_res)))
                 pygame.display.flip()
+                config.state_signals['CAL_SIG'] = 0
+                config.state_signals['BEGIN_CAL_SIG'] = 1
                 time.sleep(3)
+                config.state_signals['BEGIN_CAL_SIG'] = 0
                 return
             pygame.display.flip()
             time.sleep(1 / self.frame_rate)

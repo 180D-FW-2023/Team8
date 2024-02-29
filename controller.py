@@ -21,10 +21,11 @@ def main(self=None):
     config.imu = queue.Queue()
     config.shared = queue.Queue()
     config.threshold = ((40, 60, 20), (100, 255, 198))
+    config.state_signals = {'CAL_SIG' : 0, 'BEGIN_CAL_SIG': 0, 'GAME_SIG' : 0}
 
     
     # Start the threads
-    camera_thread = threading.Thread(target=capture.CaptureDisc)
+    camera_thread = threading.Thread(target=capture.initialize_camera)
     camera_thread.start()
 
 

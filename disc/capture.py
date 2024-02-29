@@ -11,11 +11,27 @@ flag = 0
 weighted_moving_average_x = []
 weighted_moving_average_y = []
 
-def CaptureDisc():
+def initialize_camera():
     if "macOS" in platform.platform():
         flip = -1
     else:
         flip = 1
+
+    threshold = ((40, 60, 20), (100, 255, 198))
+    while True:
+        if config.state_signals['CAL_SIG'] == 1:
+            CaptureDisc(threshold, flip)
+        if config.state_signals['BEGIN_CAL_SIG'] == 1:
+            threshold = calibrate()
+        if config.state_signals['GAME_SIG'] == 1:
+            CaptureDisc(threshold, flip)
+    return
+
+def calibrate():
+    print('test')
+    return ((40, 60, 20), (100, 255, 198))
+
+def CaptureDisc(threshold, flip):
 
     flag = 0
     # I was running into an issue where the countours object (which is an array of arrays I think) was 
@@ -23,6 +39,8 @@ def CaptureDisc():
     # purpose of the flag is to halt the cnt = contours[i] code until contours is correctly populated
     cap = cv.VideoCapture(0)
     while(1):
+        if config.state_signals['CAL_SIG'] == 0 and config.state_signals['GAME_SIG'] == 0:
+            return
         # Standard setup for OpenCV video processing
         _, frame = cap.read()
         frame = cv.flip(frame, 0)
