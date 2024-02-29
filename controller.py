@@ -20,6 +20,7 @@ def main(self=None):
     config.camera = queue.Queue()
     config.imu = queue.Queue()
     config.shared = queue.Queue()
+    config.threshold = ((40, 60, 20), (100, 255, 198))
 
     
     # Start the threads
