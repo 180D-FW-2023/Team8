@@ -43,9 +43,6 @@ class GameState:
         self.left_striker.move(left_striker_loc)
         self.right_striker.move(right_striker_loc)
 
-        # Update text
-        #self.ax.set_title('SCORE\n' + str(self.score[0]) + ' : ' + str(self.score[1]))
-
     def score_point(self, is_left_point):
         self.score[is_left_point] += 1
         self.ball.position = np.array([self.x_max / 2, self.y_max / 2])

@@ -36,22 +36,7 @@ def main(self=None):
     
     manager_instance = manager.Manager()
     manager_instance.startup()
-
-    #anim = manager_instance.game_loop()
     manager_instance.game_loop()
-    manager_instance.open_window()
-
-    while True:
-        '''
-        #if not config.shared.empty():
-        #    latest_reading = config.shared.get_nowait()
-        #game_state.refresh_display()
-        
-        '''
-
-        time.sleep(1)
-
-    camera_thread.join()
 
 
 if __name__ == "__main__":
