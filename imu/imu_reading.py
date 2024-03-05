@@ -10,7 +10,7 @@ def listener(message):
 
 def parse_message(data):
 
-    split = data.split(': ', )
+    split = str(data).split(': ', )
     split = (float(split[1][0:-6]), float(split[2][0:-6]), float(split[3][0:-9]))
     return split
 
