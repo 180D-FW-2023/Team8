@@ -23,7 +23,7 @@ class Launcher:
         self.x_res = self.resolution * self.aspect_ratio
         self.y_res = self.resolution
         self.frame_rate = frame_rate
-        self.latest_reading = (0,0)
+        self.latest_reading = (-1,-1)
         self.settings_data = [0,0,0] 
         self.diff = 0
 
