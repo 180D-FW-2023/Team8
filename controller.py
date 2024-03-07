@@ -39,6 +39,12 @@ def main(self=None):
     manager_instance.startup()
     manager_instance.game_loop()
 
+    imu_thread.join()
+    camera_thread.join()
+    fusion_thread.join()
+
+    exit()
+
 
 if __name__ == "__main__":
     main()
