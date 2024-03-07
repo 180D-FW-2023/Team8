@@ -1,3 +1,5 @@
+# This code runs on the IMU,
+
 #!/usr/bin/python
 #
 #    This program  reads the angles from the acceleromteer, gyroscope
