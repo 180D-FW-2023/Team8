@@ -256,7 +256,7 @@ class Launcher:
                 pygame.display.flip()
                 config.state_signals['CAL_SIG'] = 0
                 config.state_signals['BEGIN_CAL_SIG'] = 1
-                time.sleep(3)
+                time.sleep(20)
                 config.state_signals['BEGIN_CAL_SIG'] = 0
                 return
             pygame.display.flip()

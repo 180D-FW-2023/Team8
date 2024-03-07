@@ -25,11 +25,129 @@ def initialize_camera():
             threshold = calibrate()
         if config.state_signals['GAME_SIG'] == 1:
             CaptureDisc(threshold, flip)
+        #time.sleep(0.01)
     return
 
 def calibrate():
-    print('test')
-    return ((40, 60, 20), (100, 255, 198))
+    flag = 0
+    # I was running into an issue where the countours object (which is an array of arrays I think) was 
+    # initialized as empty on the first run through, or atleast the compiler believed it to be. So, the
+    # purpose of the flag is to halt the cnt = contours[i] code until contours is correctly populated
+    counter = 0
+    total_count = 0
+    MIN_MATCH_COUNT = 4
+    #default_lower_green = np.array([40,60,25])
+    lower_green = np.array([40,60,25])
+    #default_upper_green = np.array([100,255,198])
+    upper_green = np.array([100,255,198])
+    cap = cv.VideoCapture(2)
+    while(1):
+        # Standard setup for OpenCV video processing
+        _, frame = cap.read()
+        frame_Gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
+        frame_hsv = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
+        height, width, _ = frame.shape
+        # Threshold the HSV image to get only green colors, threshold values were received from the max 
+        # and min observed values from an online color picker, with a  sample image of the target object
+        mask = cv.inRange(frame_hsv, lower_green, upper_green)
+        #ret1, mask = cv.threshold(grayscale,0,255,cv.THRESH_BINARY+cv.THRESH_OTSU)
+        blur = cv.medianBlur(mask,29)
+        # median blur to remove salt and pepper noise
+        blur2 = cv.blur(blur,(20,20))
+        # standard blur appears to be sufficient for our case. 20,20 was chosen experimentally
+        edges = cv.Canny(blur, 100, 200)
+        contours, _ = cv.findContours(blur2, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
+        if len(contours) > 0:
+            cnt = max(contours, key = cv.contourArea)
+            x,y,w,h = cv.boundingRect(cnt)
+            cv.rectangle(frame,(x,y),(x+w,y+h),(0,0,255),2)
+        path = os.path.join('disc', 'assets', 'ThresholdStriker.png')
+        Extracted_Striker_Frame = cv.imread(path)
+        Extracted_Striker_Frame_Gray = cv.cvtColor(Extracted_Striker_Frame, cv.COLOR_BGR2GRAY)
+        # Initiate SIFT detector
+        sift = cv.SIFT_create()
+        # find the keypoints and descriptors with SIFT
+        kp1, des1 = sift.detectAndCompute(blur2,None)
+        kp2, des2 = sift.detectAndCompute(Extracted_Striker_Frame_Gray,None)
+        FLANN_INDEX_KDTREE = 1
+        index_params = dict(algorithm = FLANN_INDEX_KDTREE, trees = 5)
+        search_params = dict(checks = 50)
+        flann = cv.FlannBasedMatcher(index_params, search_params)
+        matches = flann.knnMatch(des1,des2,k=2)
+        # store all the good matches as per Lowe's ratio test.
+        good = []
+        for m,n in matches:
+            if m.distance < 0.86*n.distance:
+                good.append(m)
+        if len(good)>=MIN_MATCH_COUNT:
+            #src_pts = np.float32([ kp1[m.queryIdx].pt for m in good ]).reshape(-1,1,2)
+            #dst_pts = np.float32([ kp2[m.trainIdx].pt for m in good ]).reshape(-1,1,2)
+            #M, mask = cv.findHomography(src_pts, dst_pts, cv.RANSAC,5.0)
+            #matchesMask = mask.ravel().tolist()
+            #h,w = blur2.shape
+            #pts = np.float32([ [0,0],[0,h-1],[w-1,h-1],[w-1,0] ]).reshape(-1,1,2)
+            #dst = cv.perspectiveTransform(pts,M)
+            #blur2 = cv.polylines(blur2,[np.int32(dst)],True,255,3, cv.LINE_AA)
+            if flag == 1:
+                print ("Good Threshold Found, Exiting", lower_green, upper_green)
+                return(lower_green, upper_green)
+                #exit()
+        else:
+            print( "Not enough matches are found - {}/{}".format(len(good), MIN_MATCH_COUNT) )
+            #matchesMask = None
+        if counter >= 5:
+            #masked_frame = cv.bitwise_and(frame_hsv, frame_hsv, mask= blur2)
+            avg_hsv = cv.mean(frame_hsv, blur2)
+            #print(avg_hsv)
+            #cv.imshow("masked frame", masked_frame)
+            if (avg_hsv[0]-lower_green[0]) < (upper_green[0] - avg_hsv[0]):
+                #lower_green[0] = lower_green[0] - 5
+                upper_green[0] = upper_green[0] - 5
+            if (avg_hsv[0]-lower_green[0]) > (upper_green[0] - avg_hsv[0]):
+                lower_green[0] = lower_green[0] + 5
+                #upper_green[0] = upper_green[0] + 5
+            if (avg_hsv[1]-lower_green[1]) < (upper_green[1] - avg_hsv[1]):
+                #lower_green[1] = lower_green[1] - 5
+                upper_green[1] = upper_green[1] - 5
+            if (avg_hsv[1]-lower_green[1]) > (upper_green[1] - avg_hsv[1]):
+                lower_green[1] = lower_green[1] + 5
+                #upper_green[1] = upper_green[1] + 5
+            if (avg_hsv[2]-lower_green[2]) < (upper_green[2] - avg_hsv[2]):
+                #lower_green[2] = lower_green[2] - 5
+                upper_green[2] = upper_green[2] - 5
+            if (avg_hsv[2]-lower_green[2]) > (upper_green[2] - avg_hsv[2]):
+                lower_green[2] = lower_green[2] + 5
+                #upper_green[2] = upper_green[2] + 5
+            #print("changing Thresholding: New Lower Green", lower_green , "New Upper Green", upper_green)
+            counter = 0
+        else:
+            counter = counter+1
+        draw_params = dict(matchColor = (0,255,0), # draw matches in green color
+                    singlePointColor = None,
+                    #matchesMask = matchesMask, # draw only inliers
+                    flags = 2)
+        img3 = cv.drawMatches(blur2,kp1,Extracted_Striker_Frame_Gray,kp2,good,None,**draw_params)
+        img3_small = cv.resize(img3, (0, 0), fx = 0.5, fy = 0.5)
+        #cv.imshow('matching',img3_small)
+        #cv.imshow('frame',frame)
+        #cv.imshow('Extractedstriker' , Extracted_Striker_Frame)
+        #cv.imshow('mask',mask)
+        #cv.imshow('blur',blur)
+        #cv.imshow('blur2', blur2)
+        total_count = total_count+1 
+        #print(total_count)   
+        if total_count >= 70:
+            lower_green = np.array([40,60,25])
+            upper_green = np.array([100,255,198])
+            total_count = 0
+        k = cv.waitKey(5) & 0xFF
+        if k == 27:
+            break
+        if flag == 0:
+            flag = 1
+        #time.sleep(0.5)
+    cv.destroyAllWindows()
+    #return ((40, 60, 20), (100, 255, 198))
 
 def CaptureDisc(threshold, flip):
 
@@ -37,9 +155,10 @@ def CaptureDisc(threshold, flip):
     # I was running into an issue where the countours object (which is an array of arrays I think) was 
     # initialized as empty on the first run through, or atleast the compiler believed it to be. So, the
     # purpose of the flag is to halt the cnt = contours[i] code until contours is correctly populated
-    cap = cv.VideoCapture(0)
+    cap = cv.VideoCapture(2)
     while(1):
         if config.state_signals['CAL_SIG'] == 0 and config.state_signals['GAME_SIG'] == 0:
+            cv.destroyAllWindows()
             return
         # Standard setup for OpenCV video processing
         _, frame = cap.read()
@@ -55,8 +174,8 @@ def CaptureDisc(threshold, flip):
         #lower_green = np.array([33,16,126])
         #upper_green = np.array([67,107,199])
         #Old Camera Above, New Camera Below
-        lower_green = np.array(threshold[0])
-        upper_green = np.array(threshold[1])
+        lower_green = threshold[0]
+        upper_green = threshold[1]
         # Threshold the HSV image to get only green colors, threshold values were received from the max 
         # and min observed values from an online color picker, with a  sample image of the target object
         mask = cv.inRange(hsv, lower_green, upper_green)
