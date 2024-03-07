@@ -4,8 +4,24 @@ Note: graphics include flashing colors.
 This project aims to recreate air hockey virtually using a camera and an integrated IMU
 ## Setup
 In order to run the game, you need to install ably, pygame, numpy, opencv, and matplotlib.
-Use a python command prompt with pip to install these modules.
-In the future, this won't be necessary, as the game itself will run on a raspberry pi 4 with all these modules preinstalled.
+To begin, you'll need to clone this repository 
+```bash
+git clone
+```
+## Installation
+
+Use the package manager [pip](https://pip.pypa.io/en/stable/) to install the required dependencies within requirements.txt .
+
+```bash
+pip install -r requirements.txt
+```
+
+## Runtime ##
+After everything is installed without errors, run this command to start the game
+```bash
+python3 controller.py 
+```
+python3 controller.py 
 ## Codebase
 ![code](https://github.com/180D-FW-2023/Team8/blob/master/assets/code_overview.png)
 ## References
