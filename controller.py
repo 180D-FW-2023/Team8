@@ -18,6 +18,7 @@ from imu import imu_reading
 
 def main(self=None):
     config.camera = queue.Queue()
+    config.camera.put_nowait((0,0))
     config.imu = queue.Queue()
     config.shared = queue.Queue()
     config.threshold = ((40, 60, 20), (100, 255, 198))
