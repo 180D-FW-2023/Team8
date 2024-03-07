@@ -55,8 +55,8 @@ def CaptureDisc(threshold, flip):
         #lower_green = np.array([33,16,126])
         #upper_green = np.array([67,107,199])
         #Old Camera Above, New Camera Below
-        lower_green = np.array([40,60,20])
-        upper_green = np.array([100,255,198])
+        lower_green = np.array(threshold[0])
+        upper_green = np.array(threshold[1])
         # Threshold the HSV image to get only green colors, threshold values were received from the max 
         # and min observed values from an online color picker, with a  sample image of the target object
         mask = cv.inRange(hsv, lower_green, upper_green)
