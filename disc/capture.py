@@ -14,21 +14,23 @@ weighted_moving_average_y = []
 def initialize_camera():
     if "macOS" in platform.platform():
         flip = -1
+        camera = 0
     else:
         flip = 1
+        camera = 2
 
     threshold = ((40, 60, 20), (100, 255, 198))
     while True:
         if config.state_signals['CAL_SIG'] == 1:
-            CaptureDisc(threshold, flip)
+            CaptureDisc(threshold, flip, camera)
         if config.state_signals['BEGIN_CAL_SIG'] == 1:
-            threshold = calibrate()
+            threshold = calibrate(camera)
         if config.state_signals['GAME_SIG'] == 1:
             CaptureDisc(threshold, flip)
         #time.sleep(0.01)
     return
 
-def calibrate():
+def calibrate(camera):
     flag = 0
     # I was running into an issue where the countours object (which is an array of arrays I think) was 
     # initialized as empty on the first run through, or atleast the compiler believed it to be. So, the
@@ -40,7 +42,7 @@ def calibrate():
     lower_green = np.array([40,60,25])
     #default_upper_green = np.array([100,255,198])
     upper_green = np.array([100,255,198])
-    cap = cv.VideoCapture(2)
+    cap = cv.VideoCapture(camera)
     while(1):
         # Standard setup for OpenCV video processing
         _, frame = cap.read()
@@ -149,13 +151,13 @@ def calibrate():
     cv.destroyAllWindows()
     #return ((40, 60, 20), (100, 255, 198))
 
-def CaptureDisc(threshold, flip):
+def CaptureDisc(threshold, flip, camera):
 
     flag = 0
     # I was running into an issue where the countours object (which is an array of arrays I think) was 
     # initialized as empty on the first run through, or atleast the compiler believed it to be. So, the
     # purpose of the flag is to halt the cnt = contours[i] code until contours is correctly populated
-    cap = cv.VideoCapture(2)
+    cap = cv.VideoCapture(camera)
     while(1):
         if config.state_signals['CAL_SIG'] == 0 and config.state_signals['GAME_SIG'] == 0:
             cv.destroyAllWindows()
