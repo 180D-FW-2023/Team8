@@ -23,6 +23,6 @@ python3 controller.py
 ```
 python3 controller.py 
 ## Codebase
-![code](https://github.com/180D-FW-2023/Team8/blob/master/assets/code_overview.png)
+![code](https://github.com/180D-FW-2023/Team8/blob/master/assets/code_diagram.png)
 ## References
 Title Font: https://www.fontspace.com/pixel-digivolve-font-f22012 (Freeware license)
