@@ -1,13 +1,13 @@
 from config import config
 import time
 
-imu_weight = 0.03
+imu_weight = 0.000045
 def run_fusion():
     camera_reading = 0
     while 1:
         if not config.imu.empty():
             imu_reading = config.imu.get_nowait()
-            position_change = (imu_reading[0] * imu_weight, imu_reading[1] * imu_weight)
+            position_change = (imu_reading[0] * imu_weight, imu_reading[2] * imu_weight)
             previous_reading = camera_reading
             camera_reading = config.camera.get_nowait()
             camera_reading = fuse_data(camera_reading, position_change)
