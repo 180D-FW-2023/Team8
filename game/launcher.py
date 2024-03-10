@@ -228,6 +228,7 @@ class Launcher:
         config.state_signals['CAL_SIG'] = 1
 
         self.latest_reading = (-1,-1)
+        self.latest_reading = config.shared.put_nowait((-1,-1))
 
         cal_rect = pygame.Rect(0, 0, self.x_res*0.9, self.y_res*0.2)
         cal_rect.center = (self.x_res/2, 0.6*self.y_res)

@@ -92,6 +92,9 @@ def calibrate(camera):
             #blur2 = cv.polylines(blur2,[np.int32(dst)],True,255,3, cv.LINE_AA)
             if flag == 1:
                 print ("Good Threshold Found, Exiting", lower_green, upper_green)
+                config.state_signals['BEGIN_CAL_SIG'] = 0
+                config.state_signals['CAL_SIG'] = 0
+                cv.destroyAllWindows()
                 return(lower_green, upper_green)
                 #exit()
         else:
