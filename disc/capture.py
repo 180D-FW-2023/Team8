@@ -27,7 +27,7 @@ def initialize_camera():
             threshold = calibrate(camera)
         if config.state_signals['GAME_SIG'] == 1:
             CaptureDisc(threshold, flip, camera)
-        #time.sleep(0.01)
+        time.sleep(0.01)
     return
 
 def calibrate(camera):
