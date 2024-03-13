@@ -45,10 +45,10 @@ class Manager:
 
         while 1:
             self.frame_update()
-            if self.game_state.score[0] == 11:
+            if self.game_state.score[0] == 11 and self.end:
                 self.launcher.end_screen(False)
                 break
-            elif self.game_state.score[1] == 11:
+            elif self.game_state.score[1] == 11 and self.end:
                 self.launcher.end_screen(True)
                 break
         config.state_signals['GAME_SIG'] = 0
@@ -71,6 +71,7 @@ class Manager:
 
         self.sfx = self.launcher.settings_data[1]
         self.diff = self.launcher.settings_data[2]
+        self.end = self.launcher.settings_data[0]
         return
         
     def open_window(self):
