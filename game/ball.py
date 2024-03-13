@@ -9,7 +9,7 @@ class Ball(actor.Actor):
         super().__init__(game_state)
         self.v_mag = self.game_state.v_mag
         self.position_history = np.zeros((2, 5))
-        self.inital_velocity = self.game_state.v_mag * np.array([-np.sqrt(2) / 2, -np.sqrt(2) / 2])
+        self.inital_velocity = self.game_state.v_mag * np.array([np.sqrt(2) / 2, np.sqrt(2) / 2])
         self.velocity = self.inital_velocity.copy()
         #self.plot = self.game_state.ax.scatter([], [], color='red')
         self.position = np.array([self.game_state.x_max / 2, self.game_state.y_max / 2])

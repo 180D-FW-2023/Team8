@@ -102,6 +102,7 @@ class Striker(actor.Actor):
                 ball.velocity = ball.velocity * (1 - self.game_state.loss)
             ball.velocity += 0.3*self.avg_velocity
 
+
         
     def draw(self):
         #self.plot.set_data(self.verticies[[1, 0]])

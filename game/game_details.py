@@ -4,6 +4,8 @@ from game import ball
 from game import striker
 from game import striker_cpu
 import pygame
+import os
+import time
 
 
 class GameState:
@@ -18,6 +20,9 @@ class GameState:
         self.loss = 0.1
         self.diff = diff
         self.sfx = sfx
+        
+        self.goal_sound = pygame.mixer.Sound(os.path.join('game', 'assets', 'sounds', 'goal.wav'))
+
 
         # Create shared objects
         self.screen = screen
@@ -48,6 +53,10 @@ class GameState:
         self.score[is_left_point] += 1
         self.ball.position = np.array([self.x_max / 2, self.y_max / 2])
         self.ball.velocity[1] = 0
+
+        pygame.mixer.Sound.play(self.goal_sound)
+        pygame.mixer.music.stop()
+        
         return
         if is_left_point:
             self.ball.position = self.left_striker.position

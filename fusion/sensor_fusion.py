@@ -19,7 +19,7 @@ def run_fusion():
             if camera_reading != previous_reading:
                 config.shared.put(camera_reading)
 
-        time.sleep(0.01)
+        time.sleep(0.001)
             
 # Acc simulates velocity
 def fuse_data(camera_position, position_change):

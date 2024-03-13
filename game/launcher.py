@@ -198,12 +198,20 @@ class Launcher:
         frame_rate = self.frame_rate
         screen = self.screen
 
+        config.state_signals['GAME_SIG'] = 1
         for i in range(3):
             screen.fill('black')
             title_text = title_font.render(str(4-(i+1)), True, 'white')
             screen.blit(title_text, title_text.get_rect(center=(x_res/2, 0.5*y_res)))
             pygame.display.flip()
             time.sleep(1)
+
+        screen.fill('black')
+        title_text = title_font.render('BEGIN!', True, 'white')
+        screen.blit(title_text, title_text.get_rect(center=(x_res/2, 0.5*y_res)))
+        pygame.display.flip()
+        time.sleep(0.5)
+
         return
     
     def begin_calibration(self):
