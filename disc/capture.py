@@ -14,10 +14,10 @@ weighted_moving_average_y = []
 def initialize_camera():
     if "macOS" in platform.platform():
         flip = -1
-        camera = 0
+        camera = 1
     else:
         flip = 1
-        camera = 2
+        camera = 1
 
     threshold = ((40, 60, 20), (100, 255, 198))
     while True:
@@ -37,7 +37,7 @@ def calibrate(camera, threshold):
     # purpose of the flag is to halt the cnt = contours[i] code until contours is correctly populated
     counter = 0
     total_count = 0
-    MIN_MATCH_COUNT = 4
+    MIN_MATCH_COUNT = 5
     #default_lower_green = np.array([40,60,25])
     lower_green = np.array([40,60,25])
     #default_upper_green = np.array([100,255,198])
@@ -73,7 +73,7 @@ def calibrate(camera, threshold):
         # Initiate SIFT detector
         sift = cv.SIFT_create()
         # find the keypoints and descriptors with SIFT
-        kp1, des1 = sift.detectAndCompute(blur2,None)
+        kp1, des1 = sift.detectAndCompute(blur,None)
         kp2, des2 = sift.detectAndCompute(Extracted_Striker_Frame_Gray,None)
         FLANN_INDEX_KDTREE = 1
         index_params = dict(algorithm = FLANN_INDEX_KDTREE, trees = 5)
@@ -83,7 +83,7 @@ def calibrate(camera, threshold):
         # store all the good matches as per Lowe's ratio test.
         good = []
         for m,n in matches:
-            if m.distance < 0.86*n.distance:
+            if m.distance < 0.7*n.distance:
                 good.append(m)
         if len(good)>=MIN_MATCH_COUNT:
             #src_pts = np.float32([ kp1[m.queryIdx].pt for m in good ]).reshape(-1,1,2)
@@ -100,7 +100,6 @@ def calibrate(camera, threshold):
                 config.state_signals['BEGIN_CAL_SIG'] = 0
                 config.state_signals['CAL_SIG'] = 0
                 cv.destroyAllWindows()
-                #print((lower_green, upper_green))
                 return(lower_green, upper_green)
                 #exit()
         else:
@@ -108,38 +107,60 @@ def calibrate(camera, threshold):
             #matchesMask = None
         if counter >= 5:
             #masked_frame = cv.bitwise_and(frame_hsv, frame_hsv, mask= blur2)
-            avg_hsv = cv.mean(frame_hsv, blur2)
+            avg_hsv = cv.mean(frame_hsv, blur)
             #print(avg_hsv)
             #cv.imshow("masked frame", masked_frame)
-            if (avg_hsv[0]-lower_green[0]) < (upper_green[0] - avg_hsv[0]):
-                #lower_green[0] = lower_green[0] - 5
-                upper_green[0] = upper_green[0] - 5
-            if (avg_hsv[0]-lower_green[0]) > (upper_green[0] - avg_hsv[0]):
-                lower_green[0] = lower_green[0] + 5
-                #upper_green[0] = upper_green[0] + 5
-            if (avg_hsv[1]-lower_green[1]) < (upper_green[1] - avg_hsv[1]):
-                #lower_green[1] = lower_green[1] - 5
-                upper_green[1] = upper_green[1] - 5
-            if (avg_hsv[1]-lower_green[1]) > (upper_green[1] - avg_hsv[1]):
-                lower_green[1] = lower_green[1] + 5
-                #upper_green[1] = upper_green[1] + 5
-            if (avg_hsv[2]-lower_green[2]) < (upper_green[2] - avg_hsv[2]):
-                #lower_green[2] = lower_green[2] - 5
-                upper_green[2] = upper_green[2] - 5
-            if (avg_hsv[2]-lower_green[2]) > (upper_green[2] - avg_hsv[2]):
-                lower_green[2] = lower_green[2] + 5
-                #upper_green[2] = upper_green[2] + 5
-            #print("changing Thresholding: New Lower Green", lower_green , "New Upper Green", upper_green)
-            counter = 0
+            if cv.countNonZero(blur) <= 20736/3:
+                if (avg_hsv[0]-lower_green[0]) < (upper_green[0] - avg_hsv[0]):
+                    lower_green[0] = lower_green[0] - 5
+                    #upper_green[0] = upper_green[0] - 5
+                if (avg_hsv[0]-lower_green[0]) > (upper_green[0] - avg_hsv[0]):
+                    #lower_green[0] = lower_green[0] + 5
+                    upper_green[0] = upper_green[0] + 5
+                if (avg_hsv[1]-lower_green[1]) < (upper_green[1] - avg_hsv[1]):
+                    lower_green[1] = lower_green[1] - 5
+                    #upper_green[1] = upper_green[1] - 5
+                if (avg_hsv[1]-lower_green[1]) > (upper_green[1] - avg_hsv[1]):
+                    #lower_green[1] = lower_green[1] + 5
+                    upper_green[1] = upper_green[1] + 5
+                if (avg_hsv[2]-lower_green[2]) < (upper_green[2] - avg_hsv[2]):
+                    lower_green[2] = lower_green[2] - 5
+                    #upper_green[2] = upper_green[2] - 5
+                if (avg_hsv[2]-lower_green[2]) > (upper_green[2] - avg_hsv[2]):
+                    #lower_green[2] = lower_green[2] + 5
+                    upper_green[2] = upper_green[2] + 5
+                #print("widening")
+                counter = 0
+            else:    
+                if (avg_hsv[0]-lower_green[0]) < (upper_green[0] - avg_hsv[0]):
+                    #lower_green[0] = lower_green[0] - 5
+                    upper_green[0] = upper_green[0] - 5
+                if (avg_hsv[0]-lower_green[0]) > (upper_green[0] - avg_hsv[0]):
+                    lower_green[0] = lower_green[0] + 5
+                    #upper_green[0] = upper_green[0] + 5
+                if (avg_hsv[1]-lower_green[1]) < (upper_green[1] - avg_hsv[1]):
+                    #lower_green[1] = lower_green[1] - 5
+                    upper_green[1] = upper_green[1] - 5
+                if (avg_hsv[1]-lower_green[1]) > (upper_green[1] - avg_hsv[1]):
+                    lower_green[1] = lower_green[1] + 5
+                    #upper_green[1] = upper_green[1] + 5
+                if (avg_hsv[2]-lower_green[2]) < (upper_green[2] - avg_hsv[2]):
+                    #lower_green[2] = lower_green[2] - 5
+                    upper_green[2] = upper_green[2] - 5
+                if (avg_hsv[2]-lower_green[2]) > (upper_green[2] - avg_hsv[2]):
+                    lower_green[2] = lower_green[2] + 5
+                    #upper_green[2] = upper_green[2] + 5
+                #print("changing Thresholding: New Lower Green", lower_green , "New Upper Green", upper_green)
+                counter = 0
         else:
             counter = counter+1
         draw_params = dict(matchColor = (0,255,0), # draw matches in green color
                     singlePointColor = None,
                     #matchesMask = matchesMask, # draw only inliers
                     flags = 2)
-        img3 = cv.drawMatches(blur2,kp1,Extracted_Striker_Frame_Gray,kp2,good,None,**draw_params)
+        img3 = cv.drawMatches(blur,kp1,Extracted_Striker_Frame_Gray,kp2,good,None,**draw_params)
         img3_small = cv.resize(img3, (0, 0), fx = 0.5, fy = 0.5)
-        #cv.imshow('matching',img3_small)
+        cv.imshow('matching',img3_small)
         #cv.imshow('frame',frame)
         #cv.imshow('Extractedstriker' , Extracted_Striker_Frame)
         #cv.imshow('mask',mask)
@@ -261,7 +282,7 @@ def CaptureDisc(threshold, flip, camera):
             #print("x:", final_x)
             #print("x:", antiparallax_x)
             #print("y:", distance_estimate)
-            scaled_y = distance_estimate*0.26-3.94
+            scaled_y = distance_estimate*0.385-5.77
             if scaled_y > 1:
                 scaled_y = 1
             if scaled_y < -1:
@@ -284,7 +305,7 @@ def CaptureDisc(threshold, flip, camera):
             #print("final y", final_y)
             config.camera.put([final_x*flip, -1*final_y])
 
-        #cv.imshow('frame',frame)
+        cv.imshow('frame',frame)
         #cv.imshow('mask',mask)
         #cv.imshow('blur',blur)
         #cv.imshow('blur2', blur2)

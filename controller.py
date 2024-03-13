@@ -28,7 +28,7 @@ def main(self=None):
     # Start the threads
     camera_thread = threading.Thread(target=capture.initialize_camera)
     camera_thread.start()
-
+ 
 
     imu_thread = threading.Thread(target=imu_reading.run_imu_sub)
     imu_thread.start()
