@@ -283,7 +283,11 @@ class Launcher:
                 pygame.display.flip()
                 config.state_signals['CAL_SIG'] = 0
                 config.state_signals['BEGIN_CAL_SIG'] = 1
-                time.sleep(20)
+                for i in range(20):
+                    if config.state_signals['THRESH'] == 1:
+                        break
+                    time.sleep(2)
+
                 config.state_signals['BEGIN_CAL_SIG'] = 0
                 
                 
