@@ -34,4 +34,10 @@ Pygame Window Freezing: The pygame window can freeze on certain machines if you 
 ## Codebase
 ![code](https://github.com/180D-FW-2023/Team8/blob/master/assets/code_diagram.png)
 ## References
+### Fonts
 Title Font: https://www.fontspace.com/pixel-digivolve-font-f22012 (Freeware license)
+
+### Sounds 
+Goal: https://freesound.org/people/deadrobotmusic/sounds/662694/ (Creative Commons 0)
+Win: https://freesound.org/people/tamakari/sounds/105046/ (Creative Commons 0)
+Lose: https://freesound.org/people/michalwa2003/sounds/391133/ (Creative Commons 0)
