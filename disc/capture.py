@@ -24,13 +24,13 @@ def initialize_camera():
         if config.state_signals['CAL_SIG'] == 1:
             CaptureDisc(threshold, flip, camera)
         if config.state_signals['BEGIN_CAL_SIG'] == 1:
-            threshold = calibrate(camera)
+            threshold = calibrate(camera, threshold)
         if config.state_signals['GAME_SIG'] == 1:
             CaptureDisc(threshold, flip, camera)
         time.sleep(0.01)
     return
 
-def calibrate(camera):
+def calibrate(camera, threshold):
     flag = 0
     # I was running into an issue where the countours object (which is an array of arrays I think) was 
     # initialized as empty on the first run through, or atleast the compiler believed it to be. So, the
@@ -44,6 +44,10 @@ def calibrate(camera):
     upper_green = np.array([100,255,198])
     cap = cv.VideoCapture(camera)
     while(1):
+        if config.state_signals['BEGIN_CAL_SIG'] == 0:
+            cv.destroyAllWindows()
+            #print(threshold)
+            return (np.array(threshold[0]), np.array(threshold[1]))
         # Standard setup for OpenCV video processing
         _, frame = cap.read()
         frame_Gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
@@ -92,9 +96,11 @@ def calibrate(camera):
             #blur2 = cv.polylines(blur2,[np.int32(dst)],True,255,3, cv.LINE_AA)
             if flag == 1:
                 print ("Good Threshold Found, Exiting", lower_green, upper_green)
+                config.state_signals['THRESH'] = 1
                 config.state_signals['BEGIN_CAL_SIG'] = 0
                 config.state_signals['CAL_SIG'] = 0
                 cv.destroyAllWindows()
+                #print((lower_green, upper_green))
                 return(lower_green, upper_green)
                 #exit()
         else:

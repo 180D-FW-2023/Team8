@@ -41,3 +41,5 @@ Title Font: https://www.fontspace.com/pixel-digivolve-font-f22012 (Freeware lice
 Goal: https://freesound.org/people/deadrobotmusic/sounds/662694/ (Creative Commons 0)
 Win: https://freesound.org/people/tamakari/sounds/105046/ (Creative Commons 0)
 Lose: https://freesound.org/people/michalwa2003/sounds/391133/ (Creative Commons 0)
+Click: https://freesound.org/people/pan14/sounds/263128/ (Creative Commons 0)
+

@@ -10,4 +10,4 @@ imu = queue.Queue()
 # Global variables
 
 threshold = ((40, 60, 20), (100, 255, 198))
-state_signals = {'CAL_SIG' : 0, 'BEGIN_CAL_SIG': 0, 'GAME_SIG' : 0}
+state_signals = {'CAL_SIG' : 0, 'BEGIN_CAL_SIG': 0, 'GAME_SIG' : 0, 'THRESH' : 0}

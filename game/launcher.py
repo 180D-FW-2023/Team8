@@ -27,7 +27,15 @@ class Launcher:
         self.settings_data = [0,0,0] 
         self.diff = 0
 
+        self.click_sound = pygame.mixer.Sound(os.path.join('game', 'assets', 'sounds', 'click.wav'))
+
+
         return
+    
+    def sound_click(self):
+        pygame.mixer.Sound.play(self.click_sound)
+        pygame.mixer.music.stop()
+
     def display_to_screen(self, path):
         path = os.path.join('game', 'assets', path)
         self.img = pygame.transform.scale(pygame.image.load(path), (self.x_res, self.y_res))
@@ -37,6 +45,7 @@ class Launcher:
         pygame.display.flip()
 
     def open_launcher(self):
+        self.sound_click()
         x_res = self.resolution * self.aspect_ratio
         y_res = self.resolution
         pygame.init()
@@ -71,6 +80,7 @@ class Launcher:
             time.sleep(1 / self.frame_rate)
 
     def settings(self):
+        self.sound_click()
         path = os.path.join('game', 'assets', 'settings', 'settings_' + ''.join(map(str, self.settings_data)) + '.png')
         self.img = pygame.transform.scale(pygame.image.load(path), (self.x_res, self.y_res))
         rect = self.img.get_rect()
@@ -83,16 +93,20 @@ class Launcher:
                 if event.type == pygame.KEYDOWN:
                     keys = pygame.key.get_pressed()
                     if keys[pygame.K_1]:
+                        self.sound_click()
                         self.settings_data[0] = 1 - self.settings_data[0]
                         self.display_to_screen(os.path.join('settings', 'settings_' + ''.join(map(str, self.settings_data))) + '.png')
                     elif keys[pygame.K_2]:
+                        self.sound_click()
                         self.settings_data[1] = 1 - self.settings_data[1]
                         self.display_to_screen(os.path.join('settings', 'settings_' + ''.join(map(str, self.settings_data))) + '.png')
                     elif keys[pygame.K_3]:
+                        self.sound_click()
                         self.settings_data[2] = 1 - self.settings_data[2]
                         self.diff = self.settings_data[2]
                         self.display_to_screen(os.path.join('settings', 'settings_' + ''.join(map(str, self.settings_data))) + '.png')
                     elif keys[pygame.K_ESCAPE]:
+                        self.sound_click()
                         return
             time.sleep(1 / self.frame_rate)
 
@@ -189,6 +203,7 @@ class Launcher:
             time.sleep(1 / self.frame_rate)
     
     def countdown(self):
+        self.sound_click()
         title_font = self.title_font
         instr_font = self.instr_font
         option1_font = self.option1_font
@@ -215,6 +230,7 @@ class Launcher:
         return
     
     def begin_calibration(self):
+        self.sound_click()
         path = os.path.join('game', 'assets', 'ready.png')
         self.img = pygame.transform.scale(pygame.image.load(path), (self.x_res, self.y_res))
         rect = self.img.get_rect()
@@ -233,7 +249,9 @@ class Launcher:
             time.sleep(1 / self.frame_rate)
     
     def calibrate(self):
+        self.sound_click()
         config.state_signals['CAL_SIG'] = 1
+        config.state_signals['THRESH'] = 0
 
         self.latest_reading = (-1,-1)
         self.latest_reading = config.shared.put_nowait((-1,-1))
@@ -267,6 +285,19 @@ class Launcher:
                 config.state_signals['BEGIN_CAL_SIG'] = 1
                 time.sleep(20)
                 config.state_signals['BEGIN_CAL_SIG'] = 0
+                
+                
+                if config.state_signals['THRESH'] == 1:
+                    exit_text = 'Calibrated! Ready to play.'
+                else:
+                    exit_text = 'Please retry the calibration.'
+                
+                self.screen.fill('black')
+                instr_text = self.instr_font.render(exit_text, True, 'white')
+                self.screen.blit(instr_text, instr_text.get_rect(center=(self.x_res/2, 0.3*self.y_res)))
+                pygame.display.flip()
+                time.sleep(3)
+
                 return
             pygame.display.flip()
             time.sleep(1 / self.frame_rate)
