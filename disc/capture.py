@@ -17,7 +17,7 @@ def initialize_camera():
         camera = 1
     else:
         flip = 1
-        camera = 1
+        camera = 2
 
     threshold = ((40, 60, 20), (100, 255, 198))
     while True:
@@ -31,6 +31,7 @@ def initialize_camera():
     return
 
 def calibrate(camera, threshold):
+    config.state_signals['THRESH'] = 0
     flag = 0
     # I was running into an issue where the countours object (which is an array of arrays I think) was 
     # initialized as empty on the first run through, or atleast the compiler believed it to be. So, the
@@ -38,9 +39,7 @@ def calibrate(camera, threshold):
     counter = 0
     total_count = 0
     MIN_MATCH_COUNT = 5
-    #default_lower_green = np.array([40,60,25])
     lower_green = np.array([40,60,25])
-    #default_upper_green = np.array([100,255,198])
     upper_green = np.array([100,255,198])
     cap = cv.VideoCapture(camera)
     while(1):
@@ -56,7 +55,6 @@ def calibrate(camera, threshold):
         # Threshold the HSV image to get only green colors, threshold values were received from the max 
         # and min observed values from an online color picker, with a  sample image of the target object
         mask = cv.inRange(frame_hsv, lower_green, upper_green)
-        #ret1, mask = cv.threshold(grayscale,0,255,cv.THRESH_BINARY+cv.THRESH_OTSU)
         blur = cv.medianBlur(mask,29)
         # median blur to remove salt and pepper noise
         blur2 = cv.blur(blur,(20,20))
@@ -81,19 +79,14 @@ def calibrate(camera, threshold):
         flann = cv.FlannBasedMatcher(index_params, search_params)
         matches = flann.knnMatch(des1,des2,k=2)
         # store all the good matches as per Lowe's ratio test.
+        # We chose 0.7 experimentally, strict enough to only give good matches not too strict so that we get no matches.
         good = []
         for m,n in matches:
-            if m.distance < 0.7*n.distance:
+            if m.distance < 0.70*n.distance:
                 good.append(m)
         if len(good)>=MIN_MATCH_COUNT:
-            #src_pts = np.float32([ kp1[m.queryIdx].pt for m in good ]).reshape(-1,1,2)
-            #dst_pts = np.float32([ kp2[m.trainIdx].pt for m in good ]).reshape(-1,1,2)
-            #M, mask = cv.findHomography(src_pts, dst_pts, cv.RANSAC,5.0)
-            #matchesMask = mask.ravel().tolist()
-            #h,w = blur2.shape
-            #pts = np.float32([ [0,0],[0,h-1],[w-1,h-1],[w-1,0] ]).reshape(-1,1,2)
-            #dst = cv.perspectiveTransform(pts,M)
-            #blur2 = cv.polylines(blur2,[np.int32(dst)],True,255,3, cv.LINE_AA)
+            # Was running into an issue where lighting flare from camera startup was leading to incorrect behavior.
+            # Requiring atleast one run through with the flag eliminated this issue.
             if flag == 1:
                 print ("Good Threshold Found, Exiting", lower_green, upper_green)
                 config.state_signals['THRESH'] = 1
@@ -104,12 +97,13 @@ def calibrate(camera, threshold):
                 #exit()
         else:
             print( "Not enough matches are found - {}/{}".format(len(good), MIN_MATCH_COUNT) )
-            #matchesMask = None
         if counter >= 5:
-            #masked_frame = cv.bitwise_and(frame_hsv, frame_hsv, mask= blur2)
             avg_hsv = cv.mean(frame_hsv, blur)
             #print(avg_hsv)
             #cv.imshow("masked frame", masked_frame)
+            # This is the process that adjusts the thresholding based on the SIFT result. 
+            # Basically, if less than 10% of the image is non-zero, we need to widen the threshold
+            # If not, we make the threshold narrower, and skewed toward the average HSV value of the SIFT output image
             if cv.countNonZero(blur) <= 20736/3:
                 if (avg_hsv[0]-lower_green[0]) < (upper_green[0] - avg_hsv[0]):
                     lower_green[0] = lower_green[0] - 5
@@ -156,18 +150,19 @@ def calibrate(camera, threshold):
             counter = counter+1
         draw_params = dict(matchColor = (0,255,0), # draw matches in green color
                     singlePointColor = None,
-                    #matchesMask = matchesMask, # draw only inliers
                     flags = 2)
         img3 = cv.drawMatches(blur,kp1,Extracted_Striker_Frame_Gray,kp2,good,None,**draw_params)
         img3_small = cv.resize(img3, (0, 0), fx = 0.5, fy = 0.5)
-        cv.imshow('matching',img3_small)
+        #cv.imshow('matching',img3_small)
         #cv.imshow('frame',frame)
         #cv.imshow('Extractedstriker' , Extracted_Striker_Frame)
         #cv.imshow('mask',mask)
         #cv.imshow('blur',blur)
         #cv.imshow('blur2', blur2)
         total_count = total_count+1 
-        #print(total_count)   
+        #print(total_count) 
+        # Safeguard against the positive feedback loop or runaway case. If the calibration runs too long, 
+        # restart with the default values. 
         if total_count >= 70:
             lower_green = np.array([40,60,25])
             upper_green = np.array([100,255,198])
@@ -199,25 +194,21 @@ def CaptureDisc(threshold, flip, camera):
         #print(width) <- deprecated code to tell the size of video output
         # HSV gives better thresholding results, so below is the code to convert to HSV
         hsv = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
-        #grayscale = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
-        #lower_green = np.array([40,51,51])
-        #upper_green = np.array([85,230,153])
-        #Values above are for my laptop camera, values below are for USB camera (for project)
-        #lower_green = np.array([33,16,126])
-        #upper_green = np.array([67,107,199])
-        #Old Camera Above, New Camera Below
+        # Grab the threshold values from the passed input from calibration. Default if calibration has not been run
         lower_green = threshold[0]
         upper_green = threshold[1]
-        # Threshold the HSV image to get only green colors, threshold values were received from the max 
-        # and min observed values from an online color picker, with a  sample image of the target object
+        # Threshold the HSV image to get only green colors
         mask = cv.inRange(hsv, lower_green, upper_green)
-        #ret1, mask = cv.threshold(grayscale,0,255,cv.THRESH_BINARY+cv.THRESH_OTSU)
         blur = cv.medianBlur(mask,23)
         # median blur to remove salt and pepper noise
         blur2 = cv.blur(blur,(20,20))
         # standard blur appears to be sufficient for our case. 20,20 was chosen experimentally
+        # Helps to "homogenize" the striker image. 
+        # Basically if its like missing a chunk from its center, this helps to make sure that doesn't 
+        # get completely split into two seperate shapes for the purposes of cv.findcontours
         edges = cv.Canny(blur, 100, 200)
         contours, _ = cv.findContours(blur2, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
+        # Tried with both blur2 and edges. blur2 results were generally better.
         #contours, _ = cv.findContours(edges, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
         # This is a doozy. Basically, if contours is populated correctly 
         # (which is what flag == 1 and len(contours)>1 is supposed to guarantee)
@@ -242,23 +233,25 @@ def CaptureDisc(threshold, flip, camera):
             #See above comment, found a better way to do this, see below. Accomplishes same task, 
             #less bloat. Possibly more performant.
             cnt = max(contours, key = cv.contourArea)
-            #cnt = contours[len(contours)-1] <- I swear to god I have no idea what I was testing with this, 
-            # but maybe I was cooking so I'll leave it.
+            # Once we have found the bounding rectangle with the largest area, we need to identify its centroid.
             x,y,w,h = cv.boundingRect(cnt)
             cv.rectangle(frame,(x,y),(x+w,y+h),(0,0,255),2)
             cv.line(frame,(x,y),(x+w,y+h),(0,0,255),2)
-            # I could write my own pythagorean theorem program, but for now, importing math for hypot is fine.
-            #diagonal = math.hypot(w,h)
             centroidx = x+(w//2)
             centroidy = y+(h//2)
             cv.circle(frame, (centroidx, centroidy), 5, (0,0,255), -1)
+            # Once we have the centroid we need to scale it to between -1 and 1, for the purposes of the game state.
+            # We do this by comparing it's position to the width of the frame. 
+            # If its at x=0, (0/(w/2))-1=0-1=-1, 
+            # If it's at x=max width, i.e. the far edge of the frame across from the zero position, (w/(w/2))-1=2-1=1
             scaled_centroidx = ((centroidx/(width//2))-1)
-            #print(diagonal)
             #print("x:", scaled_centroidx)
             #print(x , y, w, h)
-            #olddiagonal = diagonal
-            #sigma = diagonal - olddiagonal
+            # This is the distance estimation using the known dimensions of the striker and the FOV of the camera. 
+            # By dividing this by the observed width of the striker, w, we can make a good estimate for distance.
             distance_estimate = 350.5*7.1/w
+            # basically this is to combat the issue where an object further away has to travel further 
+            # in order to reach the edges of the frame, it's a linear relationship scaling with distance.
             antiparallax_x = scaled_centroidx*distance_estimate/3.9
             if antiparallax_x > 1:
                 antiparallax_x = 1
@@ -267,6 +260,10 @@ def CaptureDisc(threshold, flip, camera):
             weighted_moving_average_x.append(antiparallax_x)
             #print(len(weighted_moving_average_x))
             #print(weighted_moving_average_x)
+            # This is the moving average implementation. Smooths the jitter on the data readout quite well.
+            # You can probably rewrite this so that it works even when not fully populated (possibly with a for loop?)
+            # But since the game state runs so fast, time to populate is so minuscule that this implementation works 
+            # perfectly fine and is virtually indistinguishable
             while len(weighted_moving_average_x) > 4:
                 weighted_moving_average_x.pop(0)
                 #print("popping")    
@@ -305,7 +302,7 @@ def CaptureDisc(threshold, flip, camera):
             #print("final y", final_y)
             config.camera.put([final_x*flip, -1*final_y])
 
-        cv.imshow('frame',frame)
+        #cv.imshow('frame',frame)
         #cv.imshow('mask',mask)
         #cv.imshow('blur',blur)
         #cv.imshow('blur2', blur2)

@@ -51,7 +51,7 @@ class Manager:
         while 1:
             self.frame_update()
             if start:
-                time.sleep(1)
+                time.sleep(3)
                 start = False
 
             if self.game_state.score[0] == 11 and self.end:
