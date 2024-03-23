@@ -16,7 +16,7 @@ def parse_message(data):
 
 async def imu_sub():
     # Ably script to set up subscriber
-    ably = AblyRealtime('zsW-PQ.nSlItw:zqlmeBRBlN7nYanF6LzG4ZlsgSn_3O9I-J0LVMgr7m0')
+    ably = AblyRealtime('REDACTED')
     await ably.connection.once_async('connected')
 
     channel = ably.channels.get('controller:1')
